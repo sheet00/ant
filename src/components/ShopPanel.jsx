@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { formatNumber } from '../utils/format'
+import { UNITS, DIG_UPGRADES } from '../data/gameData'
 import Tooltip from './Tooltip'
 
 export default function ShopPanel({ game }) {
@@ -25,18 +26,75 @@ export default function ShopPanel({ game }) {
   } = game
 
   const [tooltip, setTooltip] = useState(null)
+  const [hoveredInfo, setHoveredInfo] = useState(null) // { type, id, rect }
+  const mousePos = useRef({ x: 0, y: 0 })
 
-  const showTooltip = (e, name, desc, colorClass, effect) => {
-    setTooltip({
-      name,
-      desc,
-      effect,
-      rect: e.currentTarget.getBoundingClientRect(),
-      colorClass
+  const availableUpgrades = getAvailableUpgrades()
+  const unlockedAnts = getUnlockedAnts()
+
+  // ツールチップの内容を常に最新の状態に保つ
+  useEffect(() => {
+    if (!hoveredInfo) {
+      setTooltip(null)
+      return
+    }
+
+    const { type, id, rect } = hoveredInfo
+    let name = '', desc = '', effect = '', colorClass = ''
+    
+    if (type === 'digger') {
+      name = '掘削アリ'
+      desc = 'コロニーの土台を作る、最も献身的な働き手たち。'
+      effect = '採掘力 +1'
+      colorClass = 'text-green-400'
+    } else if (type === 'forager') {
+      name = '採餌アリ'
+      desc = '危険な地上へと向かい、仲間たちの命を繋ぐ食料を運ぶ冒険者。'
+      effect = '食料生産 +1/秒'
+      colorClass = 'text-red-400'
+    } else if (type === 'ant') {
+      const ant = UNITS.find(a => a.id === id)
+      if (!ant) { setHoveredInfo(null); return }
+      name = ant.name
+      desc = ant.desc
+      colorClass = ant.currency === 'electricity' ? 'text-yellow-300' : 'text-emerald-300'
+      const effects = []
+      if (ant.id === 'generator') effects.push('電気 +0.01/匹·秒')
+      if (ant.power) effects.push(`採掘 +${ant.power}`)
+      if (ant.powerMult) effects.push(`採掘倍率 +${Math.round(ant.powerMult * 100)}%`)
+      if (ant.foodMult) effects.push(`食料倍率 +${Math.round(ant.foodMult * 100)}%`)
+      effect = effects.join(' / ')
+    } else if (type === 'upgrade') {
+      const upg = DIG_UPGRADES.find(u => u.id === id)
+      if (!upg) { setHoveredInfo(null); return }
+      name = upg.name
+      desc = upg.desc
+      colorClass = 'text-stone-100'
+      const effects = []
+      if (upg.mult > 1) effects.push(`採掘倍率 +${Math.round((upg.mult - 1) * 100)}%`)
+      if (upg.foodMult > 1) effects.push(`食料倍率 +${Math.round((upg.foodMult - 1) * 100)}%`)
+      if (upg.type === 'unlock') effects.push('新しいユニットの解禁')
+      effect = effects.join(' / ')
+    }
+
+    setTooltip({ name, desc, effect, colorClass, rect })
+  }, [hoveredInfo, state.upgradeLevels, state.ants, availableUpgrades.length, unlockedAnts.length])
+
+  const handleMouseEnter = (e, type, id = null) => {
+    setHoveredInfo({
+      type,
+      id,
+      rect: e.currentTarget.getBoundingClientRect()
     })
   }
 
-  const hideTooltip = () => setTooltip(null)
+  const handleMouseLeave = () => {
+    setHoveredInfo(null)
+  }
+
+  const handleMouseMove = (e) => {
+    mousePos.current = { x: e.clientX, y: e.clientY }
+  }
 
   const diggerCost = getCost(state.diggers)
   const diggerMax = getMaxBuyable(state.diggers, state.food)
@@ -48,11 +106,11 @@ export default function ShopPanel({ game }) {
   const foragerBuyAmount = buyMode === 'max' ? foragerMax : Math.min(buyMode, foragerMax)
   const foragerTotalCost = getTotalCost(state.foragers, foragerBuyAmount)
 
-  const availableUpgrades = getAvailableUpgrades()
-  const unlockedAnts = getUnlockedAnts()
-
   return (
-    <section className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto bg-stone-900 border-l border-stone-800">
+    <section 
+      onMouseMove={handleMouseMove}
+      className="flex-1 flex flex-col gap-4 p-4 overflow-y-auto bg-stone-900 border-l border-stone-800"
+    >
       {/* ユニットセクション */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -74,8 +132,8 @@ export default function ShopPanel({ game }) {
           {/* 掘削アリ */}
           <button
             onClick={buyDigger}
-            onMouseEnter={(e) => showTooltip(e, '掘削アリ', 'コロニーの土台を作る、最も献身的な働き手たち。', 'text-green-400', '採掘力 +1')}
-            onMouseLeave={hideTooltip}
+            onMouseEnter={(e) => handleMouseEnter(e, 'digger')}
+            onMouseLeave={handleMouseLeave}
             disabled={state.food < diggerCost}
             className="flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-colors border border-stone-700 disabled:opacity-50"
           >
@@ -90,8 +148,8 @@ export default function ShopPanel({ game }) {
           {/* 採餌アリ */}
           <button
             onClick={buyForager}
-            onMouseEnter={(e) => showTooltip(e, '採餌アリ', '危険な地上へと向かい、仲間たちの命を繋ぐ食料を運ぶ冒険者。', 'text-red-400', '食料生産 +1/秒')}
-            onMouseLeave={hideTooltip}
+            onMouseEnter={(e) => handleMouseEnter(e, 'forager')}
+            onMouseLeave={handleMouseLeave}
             disabled={state.food < foragerCost}
             className="flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-colors border border-stone-700 disabled:opacity-50"
           >
@@ -113,23 +171,20 @@ export default function ShopPanel({ game }) {
             const isElectric = ant.currency === 'electricity'
             const canBuy = isElectric ? state.electricity >= cost : state.food >= cost
 
-            // 効果テキストの生成
+            // ボタン表示用の効果
             const effects = []
-            if (ant.id === 'generator') {
-              effects.push('電気 +0.01/匹·秒')
-            }
+            if (ant.id === 'generator') effects.push('電気 +0.01/匹·秒')
             if (ant.power) effects.push(`採掘 +${ant.power}`)
             if (ant.powerMult) effects.push(`採掘倍率 +${Math.round(ant.powerMult * 100)}%`)
             if (ant.foodMult) effects.push(`食料倍率 +${Math.round(ant.foodMult * 100)}%`)
-
             const effectLabel = effects.join(' / ')
 
             return (
               <button
                 key={ant.id}
                 onClick={() => buyAnt(ant.id)}
-                onMouseEnter={(e) => showTooltip(e, ant.name, ant.desc, isElectric ? 'text-yellow-300' : 'text-emerald-300', effectLabel)}
-                onMouseLeave={hideTooltip}
+                onMouseEnter={(e) => handleMouseEnter(e, 'ant', ant.id)}
+                onMouseLeave={handleMouseLeave}
                 disabled={!canBuy}
                 className={`flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-all border disabled:opacity-50 ${isElectric ? 'border-yellow-600' : 'border-emerald-700'}`}
               >
@@ -142,7 +197,6 @@ export default function ShopPanel({ game }) {
               </button>
             )
           })}
-
         </div>
       </div>
 
@@ -154,20 +208,12 @@ export default function ShopPanel({ game }) {
             {availableUpgrades.map(upg => {
               const isElectric = upg.currency === 'electricity'
               const canBuy = isElectric ? state.electricity >= upg.cost : state.food >= upg.cost
-              
-              // ツールチップ用の効果テキスト
-              const effects = []
-              if (upg.mult > 1) effects.push(`採掘倍率 +${Math.round((upg.mult - 1) * 100)}%`)
-              if (upg.foodMult > 1) effects.push(`食料倍率 +${Math.round((upg.foodMult - 1) * 100)}%`)
-              if (upg.type === 'unlock') effects.push('新しいユニットの解禁')
-              const tooltipEffect = effects.join(' / ')
-
               return (
                 <button
                   key={upg.id}
                   onClick={() => buyUpgrade(upg.id)}
-                  onMouseEnter={(e) => showTooltip(e, upg.name, upg.desc, 'text-stone-100', tooltipEffect)}
-                  onMouseLeave={hideTooltip}
+                  onMouseEnter={(e) => handleMouseEnter(e, 'upgrade', upg.id)}
+                  onMouseLeave={handleMouseLeave}
                   disabled={!canBuy}
                   className={`flex flex-col rounded-lg p-3 transition-all border text-left min-h-[80px] disabled:opacity-50 ${
                     canBuy
@@ -219,29 +265,13 @@ export default function ShopPanel({ game }) {
           <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-widest text-center">デバッグメニュー</h2>
           <div className="flex flex-col gap-2">
             <div className="flex gap-2">
-              <button 
-                onClick={addDebugFood} 
-                className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg py-3 text-sm text-amber-400 font-bold active:scale-95 transition-transform"
-              >
-                🍎 食料+
-              </button>
-              <button 
-                onClick={addDebugElectricity} 
-                className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg py-3 text-sm text-yellow-300 font-bold active:scale-95 transition-transform"
-              >
-                ⚡ 電気+
-              </button>
+              <button onClick={addDebugFood} className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg py-3 text-sm text-amber-400 font-bold active:scale-95 transition-transform">🍎 食料+</button>
+              <button onClick={addDebugElectricity} className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg py-3 text-sm text-yellow-300 font-bold active:scale-95 transition-transform">⚡ 電気+</button>
             </div>
-            <button 
-              onClick={forceGameClear} 
-              className="w-full bg-stone-800 hover:bg-stone-700 border border-blue-700 rounded-lg py-3 text-sm text-blue-400 font-bold active:scale-95 transition-transform"
-            >
-              🌀 クリア画面を表示する
-            </button>
+            <button onClick={forceGameClear} className="w-full bg-stone-800 hover:bg-stone-700 border border-blue-700 rounded-lg py-3 text-sm text-blue-400 font-bold active:scale-95 transition-transform">🌀 クリア画面を表示する</button>
           </div>
         </div>
       )}
-
 
       <Tooltip data={tooltip} />
     </section>
