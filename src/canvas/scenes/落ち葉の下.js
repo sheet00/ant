@@ -1,89 +1,33 @@
-import { px, drawSky, drawUnderground, drawGrass } from '../pixelUtils'
+export function draw(ctx, pw, ph, pixel) {
+  // 空
+  ctx.fillStyle = '#87CEEB'
+  ctx.fillRect(0, 0, pw * pixel, ph * pixel)
 
-// 地面に落ちた大きな葉（横向き、葉柄が右）
-function drawFallenLeaf(ctx, cx, topY, s) {
-  const O = '#5C3D08'
-  const B = '#8B6914'
-  const L = '#A07820'
-  const V = '#5A4008'
-  const S = '#6B5510'
-
-  const data = [
-    '        OOO                         ',
-    '      OOBLBOO                       ',
-    '    OOBBLSLBBOO                     ',
-    '   OBLBBBLBBBLOO                    ',
-    '  OBBLSBBLBBSLBBOO                  ',
-    ' OBBBBBBLBBBBBBBBOO                 ',
-    ' OBLBSBBLBBSBBBBLBOO                ',
-    'OBBBBBBBLBBBBBBBBBBOOO              ',
-    'OBLBSBVVVVVVVVVVVVVVVVVOO           ',
-    'OBBBBBBBLBBBBBBBBBBBBBBBOOOSSS      ',
-    'OBLBSBBLBBSBLBBSBBBBLBBOO           ',
-    ' OBBBBBLBBBBBBBBBBBBBBOO            ',
-    ' OBLBSBBBLBBSBBBBLBBOO              ',
-    '  OBBLSBBBLBBSLBBBOO               ',
-    '   OBLBBBLBBBBBOO                   ',
-    '    OOBBLSLBBOO                     ',
-    '      OOBLBOO                       ',
-    '        OOO                         ',
-  ]
-
-  const colorMap = {
-    ' ': null,
-    'O': O, 'B': B, 'L': L, 'V': V, 'S': S,
+  let seed = 123
+  function random() {
+    seed = (seed * 16807) % 2147483647
+    return (seed - 1) / 2147483646
   }
 
-  const maxW = Math.max(...data.map(r => r.length))
-  const offsetX = cx - Math.floor(maxW / 2)
+  // 遠景の山や木
+  ctx.fillStyle = '#3CB371'
+  ctx.beginPath()
+  ctx.arc(pw * 0.2 * pixel, ph * 0.6 * pixel, pw * 0.4 * pixel, 0, Math.PI * 2)
+  ctx.arc(pw * 0.8 * pixel, ph * 0.6 * pixel, pw * 0.5 * pixel, 0, Math.PI * 2)
+  ctx.fill()
 
-  for (let row = 0; row < data.length; row++) {
-    const line = data[row]
-    for (let col = 0; col < line.length; col++) {
-      const c = colorMap[line[col]]
-      if (c) px(ctx, offsetX + col, topY + row, s, c)
-    }
+  // 地面 (土と草)
+  ctx.fillStyle = '#8B4513'
+  ctx.fillRect(0, ph * 0.7 * pixel, pw * pixel, ph * 0.3 * pixel)
+  ctx.fillStyle = '#228B22'
+  ctx.fillRect(0, ph * 0.7 * pixel, pw * pixel, 4 * pixel)
+
+  // 落ち葉の山
+  const colors = ['#A0522D', '#D2691E', '#CD853F', '#8B4513']
+  for (let i = 0; i < 150; i++) {
+    const lx = random() * pw
+    const ly = ph * 0.7 + random() * (ph * 0.25)
+    ctx.fillStyle = colors[Math.floor(random() * colors.length)]
+    ctx.fillRect(lx * pixel, ly * pixel, 4 * pixel, 2 * pixel)
   }
-}
-
-// 小さなアリの巣（黒いトンネルがちょっとあるだけ）
-function drawSmallNest(ctx, cx, groundY, s) {
-  const hole = '#1A1008'
-
-  // 入口の穴（地表に小さな黒い穴）
-  px(ctx, cx, groundY, s, hole)
-  px(ctx, cx + 1, groundY, s, hole)
-
-  // 縦トンネル（1px幅でまっすぐ下へ）
-  for (let y = 1; y <= 8; y++) {
-    px(ctx, cx, groundY + y, s, hole)
-  }
-
-  // 下で少し横に広がる小部屋
-  for (let x = -2; x <= 2; x++) {
-    px(ctx, cx + x, groundY + 9, s, hole)
-    px(ctx, cx + x, groundY + 10, s, hole)
-  }
-  for (let x = -1; x <= 1; x++) {
-    px(ctx, cx + x, groundY + 11, s, hole)
-  }
-}
-
-export function draw(ctx, pw, ph, s) {
-  const groundY = Math.floor(ph * 0.45)
-
-  drawSky(ctx, pw, groundY, s)
-  drawUnderground(ctx, pw, ph, groundY, s)
-
-  const nestCx = Math.floor(pw / 2)
-
-  // アリの巣（ドット絵）
-  drawSmallNest(ctx, nestCx, groundY, s)
-
-  drawGrass(ctx, pw, groundY, s)
-
-  // 大きな落ち葉が地面に横向きに
-  drawFallenLeaf(ctx, nestCx, groundY - 18, s)
-
-  return { antX: nestCx, antY: groundY + 10 }
 }
