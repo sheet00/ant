@@ -25,10 +25,11 @@ export default function ShopPanel({ game }) {
 
   const [tooltip, setTooltip] = useState(null)
 
-  const showTooltip = (e, name, desc, colorClass) => {
+  const showTooltip = (e, name, desc, colorClass, effect) => {
     setTooltip({
       name,
       desc,
+      effect,
       rect: e.currentTarget.getBoundingClientRect(),
       colorClass
     })
@@ -72,13 +73,14 @@ export default function ShopPanel({ game }) {
           {/* 掘削アリ */}
           <button
             onClick={buyDigger}
-            onMouseEnter={(e) => showTooltip(e, '掘削アリ', '地面を掘って領地を広げます。採掘力が高いほど、新しい場所へ早く到達できます。', 'text-green-400')}
+            onMouseEnter={(e) => showTooltip(e, '掘削アリ', 'コロニーの土台を作る、最も献身的な働き手たち。', 'text-green-400', '採掘力 +1')}
             onMouseLeave={hideTooltip}
             disabled={state.food < diggerCost}
             className="flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-colors border border-stone-700 disabled:opacity-50"
           >
             <div className="text-stone-200 font-bold text-sm">掘削アリ</div>
             <div className="text-green-400 text-xl font-bold">{formatNumber(state.diggers)}</div>
+            <div className="text-stone-400 text-xs font-bold">採掘力 +1</div>
             <div className="text-amber-400 text-xs font-bold mt-1">
               🍎{buyMode === 1 || diggerBuyAmount <= 1 ? formatNumber(diggerCost) : formatNumber(diggerTotalCost)}
             </div>
@@ -87,13 +89,14 @@ export default function ShopPanel({ game }) {
           {/* 採餌アリ */}
           <button
             onClick={buyForager}
-            onMouseEnter={(e) => showTooltip(e, '採餌アリ', '地上の落ち葉などを集めて食料にします。アリを増やすための基本リソースです。', 'text-red-400')}
+            onMouseEnter={(e) => showTooltip(e, '採餌アリ', '危険な地上へと向かい、仲間たちの命を繋ぐ食料を運ぶ冒険者。', 'text-red-400', '食料生産 +1/秒')}
             onMouseLeave={hideTooltip}
             disabled={state.food < foragerCost}
             className="flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-colors border border-stone-700 disabled:opacity-50"
           >
             <div className="text-stone-200 font-bold text-sm">採餌アリ</div>
             <div className="text-red-400 text-xl font-bold">{formatNumber(state.foragers)}</div>
+            <div className="text-stone-400 text-xs font-bold">食料 +1/秒</div>
             <div className="text-amber-400 text-xs font-bold mt-1">
               🍎{buyMode === 1 || foragerBuyAmount <= 1 ? formatNumber(foragerCost) : formatNumber(foragerTotalCost)}
             </div>
@@ -109,23 +112,36 @@ export default function ShopPanel({ game }) {
             const isElectric = ant.currency === 'electricity'
             const canBuy = isElectric ? state.electricity >= cost : state.food >= cost
 
+            // 効果テキストの生成
+            const effects = []
+            if (ant.id === 'generator') {
+              effects.push('電気 +0.01/匹·秒')
+            }
+            if (ant.power) effects.push(`採掘 +${ant.power}`)
+            if (ant.powerMult) effects.push(`採掘倍率 +${Math.round(ant.powerMult * 100)}%`)
+            if (ant.foodMult) effects.push(`食料倍率 +${Math.round(ant.foodMult * 100)}%`)
+
+            const effectLabel = effects.join(' / ')
+
             return (
               <button
                 key={ant.id}
                 onClick={() => buyAnt(ant.id)}
-                onMouseEnter={(e) => showTooltip(e, ant.name, ant.desc, isElectric ? 'text-yellow-300' : 'text-emerald-300')}
+                onMouseEnter={(e) => showTooltip(e, ant.name, ant.desc, isElectric ? 'text-yellow-300' : 'text-emerald-300', effectLabel)}
                 onMouseLeave={hideTooltip}
                 disabled={!canBuy}
                 className={`flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-all border disabled:opacity-50 ${isElectric ? 'border-yellow-600' : 'border-emerald-700'}`}
               >
                 <div className={`font-bold text-sm truncate ${isElectric ? 'text-yellow-300' : 'text-emerald-300'}`}>{ant.name}</div>
                 <div className={`text-xl font-bold ${isElectric ? 'text-yellow-400' : 'text-emerald-400'}`}>{formatNumber(count)}</div>
+                <div className="text-stone-400 text-xs font-bold truncate">{effectLabel}</div>
                 <div className={`text-xs font-bold mt-1 ${isElectric ? 'text-yellow-300' : 'text-amber-400'}`}>
                   {isElectric ? '⚡' : '🍎'}{buyMode === 1 || buyAmount <= 1 ? formatNumber(cost) : formatNumber(totalCost)}
                 </div>
               </button>
             )
           })}
+
         </div>
       </div>
 
@@ -137,11 +153,19 @@ export default function ShopPanel({ game }) {
             {availableUpgrades.map(upg => {
               const isElectric = upg.currency === 'electricity'
               const canBuy = isElectric ? state.electricity >= upg.cost : state.food >= upg.cost
+              
+              // ツールチップ用の効果テキスト
+              const effects = []
+              if (upg.mult > 1) effects.push(`採掘倍率 +${Math.round((upg.mult - 1) * 100)}%`)
+              if (upg.foodMult > 1) effects.push(`食料倍率 +${Math.round((upg.foodMult - 1) * 100)}%`)
+              if (upg.type === 'unlock') effects.push('新しいユニットの解禁')
+              const tooltipEffect = effects.join(' / ')
+
               return (
                 <button
                   key={upg.id}
                   onClick={() => buyUpgrade(upg.id)}
-                  onMouseEnter={(e) => showTooltip(e, upg.name, upg.desc, 'text-stone-100')}
+                  onMouseEnter={(e) => showTooltip(e, upg.name, upg.desc, 'text-stone-100', tooltipEffect)}
                   onMouseLeave={hideTooltip}
                   disabled={!canBuy}
                   className={`flex flex-col rounded-lg p-3 transition-all border text-left min-h-[80px] disabled:opacity-50 ${
@@ -157,8 +181,21 @@ export default function ShopPanel({ game }) {
                   <div className="text-stone-100 font-bold text-sm leading-tight mb-auto">{upg.name}</div>
                   <div className="flex justify-between items-end mt-2">
                     <div className="flex flex-col gap-0.5">
-                      {upg.mult > 1 && <span className="text-blue-300 text-xs font-bold">⛏️ ×{upg.mult}</span>}
-                      {upg.foodMult > 1 && <span className="text-amber-300 text-xs font-bold">🍎 ×{upg.foodMult}</span>}
+                      {upg.mult > 1 && (
+                        <span className="text-blue-300 text-xs font-bold leading-none">
+                          採掘 +{Math.round((upg.mult - 1) * 100)}%
+                        </span>
+                      )}
+                      {upg.foodMult > 1 && (
+                        <span className="text-amber-300 text-xs font-bold leading-none">
+                          食料 +{Math.round((upg.foodMult - 1) * 100)}%
+                        </span>
+                      )}
+                      {upg.type === 'unlock' && (
+                        <span className="text-green-300 text-xs font-bold leading-none">
+                          解禁
+                        </span>
+                      )}
                     </div>
                     <span className={`text-base font-bold ${isElectric ? 'text-yellow-300' : 'text-amber-400'}`}>
                       {isElectric ? '⚡' : '🍎'}{formatNumber(upg.cost)}
