@@ -16,6 +16,7 @@ export default function ShopPanel({ game }) {
     buyUpgrade,
     addDebugFood,
     addDebugElectricity,
+    forceGameClear,
     getUnlockedAnts,
     getAntCost,
     getAntTotalCost,
@@ -216,18 +217,26 @@ export default function ShopPanel({ game }) {
       {import.meta.env.DEV && (
         <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-stone-800">
           <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-widest text-center">デバッグメニュー</h2>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <button 
+                onClick={addDebugFood} 
+                className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg py-3 text-sm text-amber-400 font-bold active:scale-95 transition-transform"
+              >
+                🍎 食料+
+              </button>
+              <button 
+                onClick={addDebugElectricity} 
+                className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg py-3 text-sm text-yellow-300 font-bold active:scale-95 transition-transform"
+              >
+                ⚡ 電気+
+              </button>
+            </div>
             <button 
-              onClick={addDebugFood} 
-              className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg py-3 text-sm text-amber-400 font-bold active:scale-95 transition-transform"
+              onClick={forceGameClear} 
+              className="w-full bg-stone-800 hover:bg-stone-700 border border-blue-700 rounded-lg py-3 text-sm text-blue-400 font-bold active:scale-95 transition-transform"
             >
-              🍎 食料を増やす
-            </button>
-            <button 
-              onClick={addDebugElectricity} 
-              className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg py-3 text-sm text-yellow-300 font-bold active:scale-95 transition-transform"
-            >
-              ⚡ 電気を作る
+              🌀 クリア画面を表示する
             </button>
           </div>
         </div>

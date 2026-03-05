@@ -15,3 +15,34 @@ button:disabled {
   opacity: 1;
   text-shadow: 0 0 6px #fff, 0 0 2px #fff;
 }
+
+/* 宇宙制覇演出用 */
+@keyframes space-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(234, 179, 8, 0.2), inset 0 0 20px rgba(234, 179, 8, 0.1); }
+  50% { box-shadow: 0 0 60px rgba(234, 179, 8, 0.5), inset 0 0 40px rgba(234, 179, 8, 0.2); }
+}
+
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 0.8; transform: scale(1.2); }
+}
+
+@keyframes float-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.animate-space-glow {
+  animation: space-glow 4s ease-in-out infinite;
+}
+
+.animate-float-up {
+  animation: float-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.star-particle {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  animation: star-twinkle var(--duration) ease-in-out infinite;
+}

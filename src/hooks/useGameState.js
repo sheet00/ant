@@ -291,6 +291,9 @@ export function useGameState() {
   const addDebugElectricity = () => {
     setState(s => ({ ...s, electricity: s.electricity + 1e30 }))
   }
+  const forceGameClear = () => {
+    setState(s => ({ ...s, gameCleared: true, territory: 1e20 }))
+  }
 
   // ゲームループ
   useEffect(() => {
@@ -355,6 +358,7 @@ export function useGameState() {
     resetGame,
     addDebugFood,
     addDebugElectricity,
+    forceGameClear,
     // 追加アリ
     getUnlockedAnts,
     getAntCost,
