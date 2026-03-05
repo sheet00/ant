@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
 import { useGameState } from './hooks/useGameState'
 import Header from './components/Header'
 import StatusPanel from './components/StatusPanel'
 import AntVisual from './components/AntVisual'
 import ShopPanel from './components/ShopPanel'
+import './index.css'
 
-export default function App() {
+function App() {
   const game = useGameState()
 
   return (
@@ -35,3 +37,9 @@ export default function App() {
     </div>
   )
 }
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+)
