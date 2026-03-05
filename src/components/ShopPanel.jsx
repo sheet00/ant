@@ -77,9 +77,9 @@ export default function ShopPanel({ game }) {
             disabled={state.food < diggerCost}
             className="flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-colors border border-stone-700 disabled:opacity-50"
           >
-            <div className="text-stone-200 font-bold text-xs truncate">掘削アリ</div>
-            <div className="text-green-400 text-lg font-bold">{formatNumber(state.diggers)}</div>
-            <div className="text-amber-400 text-[10px] font-bold mt-1">
+            <div className="text-stone-200 font-bold text-sm">掘削アリ</div>
+            <div className="text-green-400 text-xl font-bold">{formatNumber(state.diggers)}</div>
+            <div className="text-amber-400 text-xs font-bold mt-1">
               🍎{buyMode === 1 || diggerBuyAmount <= 1 ? formatNumber(diggerCost) : formatNumber(diggerTotalCost)}
             </div>
           </button>
@@ -92,9 +92,9 @@ export default function ShopPanel({ game }) {
             disabled={state.food < foragerCost}
             className="flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-colors border border-stone-700 disabled:opacity-50"
           >
-            <div className="text-stone-200 font-bold text-xs truncate">採餌アリ</div>
-            <div className="text-red-400 text-lg font-bold">{formatNumber(state.foragers)}</div>
-            <div className="text-amber-400 text-[10px] font-bold mt-1">
+            <div className="text-stone-200 font-bold text-sm">採餌アリ</div>
+            <div className="text-red-400 text-xl font-bold">{formatNumber(state.foragers)}</div>
+            <div className="text-amber-400 text-xs font-bold mt-1">
               🍎{buyMode === 1 || foragerBuyAmount <= 1 ? formatNumber(foragerCost) : formatNumber(foragerTotalCost)}
             </div>
           </button>
@@ -118,9 +118,9 @@ export default function ShopPanel({ game }) {
                 disabled={!canBuy}
                 className={`flex flex-col bg-stone-800 hover:bg-stone-700 active:bg-stone-600 rounded-lg p-3 transition-all border disabled:opacity-50 ${isElectric ? 'border-yellow-600' : 'border-emerald-700'}`}
               >
-                <div className={`font-bold text-xs truncate ${isElectric ? 'text-yellow-300' : 'text-emerald-300'}`}>{ant.name}</div>
-                <div className={`text-lg font-bold ${isElectric ? 'text-yellow-400' : 'text-emerald-400'}`}>{formatNumber(count)}</div>
-                <div className={`text-[10px] font-bold mt-1 ${isElectric ? 'text-yellow-300' : 'text-amber-400'}`}>
+                <div className={`font-bold text-sm truncate ${isElectric ? 'text-yellow-300' : 'text-emerald-300'}`}>{ant.name}</div>
+                <div className={`text-xl font-bold ${isElectric ? 'text-yellow-400' : 'text-emerald-400'}`}>{formatNumber(count)}</div>
+                <div className={`text-xs font-bold mt-1 ${isElectric ? 'text-yellow-300' : 'text-amber-400'}`}>
                   {isElectric ? '⚡' : '🍎'}{buyMode === 1 || buyAmount <= 1 ? formatNumber(cost) : formatNumber(totalCost)}
                 </div>
               </button>
@@ -133,7 +133,7 @@ export default function ShopPanel({ game }) {
       {availableUpgrades.length > 0 && (
         <div className="flex flex-col gap-2">
           <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-widest">進化</h2>
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {availableUpgrades.map(upg => {
               const isElectric = upg.currency === 'electricity'
               const canBuy = isElectric ? state.electricity >= upg.cost : state.food >= upg.cost
@@ -144,43 +144,58 @@ export default function ShopPanel({ game }) {
                   onMouseEnter={(e) => showTooltip(e, upg.name, upg.desc, 'text-stone-100')}
                   onMouseLeave={hideTooltip}
                   disabled={!canBuy}
-                  className={`flex flex-col rounded-lg p-2 transition-all border text-left h-16 disabled:opacity-50 ${
+                  className={`flex flex-col rounded-lg p-3 transition-all border text-left min-h-[80px] disabled:opacity-50 ${
                     canBuy
                       ? isElectric
-                        ? 'bg-gradient-to-r from-yellow-900 to-yellow-800 border-yellow-600'
+                        ? 'bg-gradient-to-r from-yellow-900 to-yellow-800 border-yellow-600 shadow-[0_0_10px_rgba(234,179,8,0.2)]'
                         : upg.type === 'unlock' 
-                          ? 'bg-gradient-to-r from-green-900 to-green-800 border-green-600'
-                          : 'bg-gradient-to-r from-blue-900 to-blue-800 border-blue-600'
+                          ? 'bg-gradient-to-r from-green-900 to-green-800 border-green-600 shadow-[0_0_10px_rgba(34,197,94,0.2)]'
+                          : 'bg-gradient-to-r from-blue-900 to-blue-800 border-blue-600 shadow-[0_0_10px_rgba(59,130,246,0.2)]'
                       : 'bg-stone-800 border-stone-700 opacity-50'
                   }`}
                 >
-                  <div className="text-stone-100 font-bold text-[10px] truncate leading-tight mb-auto">{upg.name}</div>
-                  <div className="flex justify-between items-center mt-auto">
-                    <div className="flex gap-1">
-                      {upg.mult > 1 && <span className="text-blue-300 text-[10px] font-bold">⛏️×{upg.mult}</span>}
-                      {upg.foodMult > 1 && <span className="text-amber-300 text-[10px] font-bold">🍎×{upg.foodMult}</span>}
+                  <div className="text-stone-100 font-bold text-sm leading-tight mb-auto">{upg.name}</div>
+                  <div className="flex justify-between items-end mt-2">
+                    <div className="flex flex-col gap-0.5">
+                      {upg.mult > 1 && <span className="text-blue-300 text-xs font-bold">⛏️ ×{upg.mult}</span>}
+                      {upg.foodMult > 1 && <span className="text-amber-300 text-xs font-bold">🍎 ×{upg.foodMult}</span>}
                     </div>
-                    <span className={`text-[10px] font-bold ${isElectric ? 'text-yellow-300' : 'text-amber-400'}`}>
+                    <span className={`text-base font-bold ${isElectric ? 'text-yellow-300' : 'text-amber-400'}`}>
                       {isElectric ? '⚡' : '🍎'}{formatNumber(upg.cost)}
                     </span>
                   </div>
                 </button>
               )
             })}
+            {/* 伏せ枠 */}
+            <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-stone-700 min-h-[80px] bg-stone-900/30">
+              <div className="text-stone-600 font-bold text-2xl">？</div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* デバッグ (開発時のみ表示) */}
+      {/* デバッグ */}
       {import.meta.env.DEV && (
-        <div className="flex flex-col gap-2 mt-auto">
-          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-widest border-t border-stone-800 pt-4">デバッグ</h2>
+        <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-stone-800">
+          <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-widest text-center">デバッグメニュー</h2>
           <div className="flex gap-2">
-            <button onClick={addDebugFood} className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg px-2 py-1 text-[10px] text-amber-400 font-bold">🍎 食料+</button>
-            <button onClick={addDebugElectricity} className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg px-2 py-1 text-[10px] text-yellow-300 font-bold">⚡ 電気+</button>
+            <button 
+              onClick={addDebugFood} 
+              className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg py-3 text-sm text-amber-400 font-bold active:scale-95 transition-transform"
+            >
+              🍎 食料を増やす
+            </button>
+            <button 
+              onClick={addDebugElectricity} 
+              className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg py-3 text-sm text-yellow-300 font-bold active:scale-95 transition-transform"
+            >
+              ⚡ 電気を作る
+            </button>
           </div>
         </div>
       )}
+
 
       <Tooltip data={tooltip} />
     </section>

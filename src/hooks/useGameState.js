@@ -136,10 +136,18 @@ export function useGameState() {
     return total
   }
 
-  // 利用可能なアップグレード（未購入を全部表示）
+  // 利用可能なアップグレード（購入済みの最大ID+1まで表示）
   const getAvailableUpgrades = () => {
+    const purchasedIds = Object.keys(state.upgradeLevels).map(Number)
+    const maxPurchasedId = purchasedIds.length > 0 ? Math.max(...purchasedIds) : 0
+    
     return DIG_UPGRADES
-      .filter(upg => !(state.upgradeLevels[upg.id] >= 1))
+      .filter(upg => {
+        // 既に持っているものは除外
+        if (state.upgradeLevels[upg.id] >= 1) return false
+        // IDが購入済み最大ID + 1 以内のものだけ表示
+        return upg.id <= maxPurchasedId + 1
+      })
   }
 
   // マイルストーン情報
