@@ -200,24 +200,26 @@ export default function ShopPanel({ game }) {
         </div>
       )}
 
-      {/* デバッグ */}
-      <div className="flex flex-col gap-2 mt-auto">
-        <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-widest">デバッグ</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={addDebugFood}
-            className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg px-3 py-2 text-sm text-amber-400 font-bold"
-          >
-            🍎 食料MAX
-          </button>
-          <button
-            onClick={addDebugElectricity}
-            className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg px-3 py-2 text-sm text-yellow-300 font-bold"
-          >
-            ⚡ 電気MAX
-          </button>
+      {/* デバッグ (開発時のみ表示) */}
+      {import.meta.env.DEV && (
+        <div className="flex flex-col gap-2 mt-auto">
+          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-widest">デバッグ</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={addDebugFood}
+              className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg px-3 py-2 text-sm text-amber-400 font-bold"
+            >
+              🍎 食料MAX
+            </button>
+            <button
+              onClick={addDebugElectricity}
+              className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg px-3 py-2 text-sm text-yellow-300 font-bold"
+            >
+              ⚡ 電気MAX
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </section>
   )
 }

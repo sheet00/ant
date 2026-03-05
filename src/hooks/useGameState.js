@@ -6,7 +6,7 @@ const COST_MULTIPLIER = 1.0
 const UPGRADE_COST_MULT = 1.5
 
 export function useGameState() {
-  const DEBUG = true
+  const DEBUG = import.meta.env.DEV
 
   const [state, setState] = useState({
     food: 50,
