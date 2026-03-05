@@ -1,217 +1,117 @@
 import { px, pxRect, drawSky, drawUnderground, drawGrass } from '../pixelUtils'
 
-// 噴水（円形の池 + 中央の噴水口 + 水しぶき）
-function drawFountain(ctx, pw, groundY, s) {
-  const stone = '#999999'
-  const stoneD = '#777777'
-  const stoneL = '#BBBBBB'
-  const water = '#6BAED6'
-  const waterL = '#87CEEB'
-  const waterD = '#4A90B8'
-  const splash = '#B0DFF0'
+function pseudoRandom(x, y) {
+  const dot = x * 12.9898 + y * 78.233
+  const sn = dot % 3.14
+  return (Math.sin(sn) * 43758.5453) % 1
+}
 
-  const cx = Math.floor(pw / 2)
-  const poolY = groundY - 4
-
-  // 池の縁（石造り）- 台形風に1ドットずつ
-  const poolLeft = cx - 18
-  const poolRight = cx + 18
-  // 底部の縁
-  for (let x = poolLeft + 2; x <= poolRight - 2; x++) {
-    px(ctx, x, poolY + 2, s, stoneD)
-  }
-  // 中段の縁
-  for (let x = poolLeft + 1; x <= poolRight - 1; x++) {
-    px(ctx, x, poolY + 1, s, stone)
-  }
-  // 上段の縁
-  for (let x = poolLeft; x <= poolRight; x++) {
-    px(ctx, x, poolY, s, stoneL)
-  }
-  // 左壁
-  for (let y = poolY; y <= poolY + 2; y++) {
-    px(ctx, poolLeft, y, s, stoneD)
-    px(ctx, poolLeft + 1, y, s, stone)
-  }
-  // 右壁
-  for (let y = poolY; y <= poolY + 2; y++) {
-    px(ctx, poolRight, y, s, stoneD)
-    px(ctx, poolRight - 1, y, s, stone)
-  }
-
-  // 水面
-  for (let x = poolLeft + 2; x <= poolRight - 2; x++) {
-    px(ctx, x, poolY + 1, s, waterD)
-  }
-  for (let x = poolLeft + 3; x <= poolRight - 3; x++) {
-    px(ctx, x, poolY, s, water)
-  }
-  // 水面の波紋
-  for (let i = 0; i < 6; i++) {
-    const wx = poolLeft + 5 + i * 5
-    if (wx < poolRight - 3) {
-      px(ctx, wx, poolY, s, waterL)
+function drawOrganicChamber(ctx, cx, cy, rw, rh, s, holeColor) {
+  for (let dy = -rh; dy <= rh; dy++) {
+    for (let dx = -rw; dx <= rw; dx++) {
+      const dist = (dx * dx) / (rw * rw) + (dy * dy) / (rh * rh)
+      const noise = pseudoRandom(cx + dx, cy + dy) * 0.15
+      if (dist < 1.0 + noise) {
+        px(ctx, cx + dx, cy + dy, s, holeColor)
+      }
     }
-  }
-
-  // 中央の噴水柱（石の台座）
-  const pillarX = cx
-  px(ctx, pillarX - 1, poolY - 1, s, stone)
-  px(ctx, pillarX, poolY - 1, s, stoneL)
-  px(ctx, pillarX + 1, poolY - 1, s, stone)
-  px(ctx, pillarX - 1, poolY - 2, s, stone)
-  px(ctx, pillarX, poolY - 2, s, stoneL)
-  px(ctx, pillarX + 1, poolY - 2, s, stone)
-  px(ctx, pillarX, poolY - 3, s, stoneL)
-
-  // 噴水の水柱
-  for (let y = poolY - 4; y >= poolY - 14; y--) {
-    px(ctx, pillarX, y, s, waterL)
-  }
-  // 水柱の太い部分
-  for (let y = poolY - 4; y >= poolY - 10; y--) {
-    px(ctx, pillarX - 1, y, s, water)
-    px(ctx, pillarX + 1, y, s, water)
-  }
-
-  // 水しぶき（放物線で左右に飛び散る）
-  // 左側の水しぶき
-  const topWater = poolY - 14
-  for (let i = 0; i < 8; i++) {
-    const sx = pillarX - 1 - i
-    const sy = topWater + Math.floor(i * i * 0.3)
-    if (sy < poolY) {
-      px(ctx, sx, sy, s, splash)
-      if (i > 2) px(ctx, sx, sy + 1, s, waterL)
-    }
-  }
-  // 右側の水しぶき
-  for (let i = 0; i < 8; i++) {
-    const sx = pillarX + 1 + i
-    const sy = topWater + Math.floor(i * i * 0.3)
-    if (sy < poolY) {
-      px(ctx, sx, sy, s, splash)
-      if (i > 2) px(ctx, sx, sy + 1, s, waterL)
-    }
-  }
-
-  // 落水のしずく
-  for (let i = 0; i < 5; i++) {
-    const dx = pillarX - 6 + i * 3
-    const dy = poolY - 2 + (i % 2)
-    px(ctx, dx, dy, s, splash)
   }
 }
 
-// アリの巣（10部屋）
-function drawNest10(ctx, cx, groundY, s) {
+// 噴水（円形の池 + 中央の噴水口 + 水しぶき）
+function drawFountain(ctx, pw, groundY, s) {
+  const stone = '#999999', stoneD = '#777777', stoneL = '#BBBBBB'
+  const water = '#6BAED6', waterL = '#87CEEB', waterD = '#4A90B8', splash = '#B0DFF0'
+  const cx = Math.floor(pw / 2), poolY = groundY - 4
+  const poolLeft = cx - 18, poolRight = cx + 18
+
+  // 池の縁
+  for (let x = poolLeft + 2; x <= poolRight - 2; x++) px(ctx, x, poolY + 2, s, stoneD)
+  for (let x = poolLeft + 1; x <= poolRight - 1; x++) px(ctx, x, poolY + 1, s, stone)
+  for (let x = poolLeft; x <= poolRight; x++) px(ctx, x, poolY, s, stoneL)
+  for (let y = poolY; y <= poolY + 2; y++) {
+    px(ctx, poolLeft, y, s, stoneD); px(ctx, poolLeft + 1, y, s, stone)
+    px(ctx, poolRight, y, s, stoneD); px(ctx, poolRight - 1, y, s, stone)
+  }
+
+  // 水面
+  for (let x = poolLeft + 2; x <= poolRight - 2; x++) px(ctx, x, poolY + 1, s, waterD)
+  for (let x = poolLeft + 3; x <= poolRight - 3; x++) px(ctx, x, poolY, s, water)
+
+  // 中央の噴水柱
+  const pX = cx
+  pxRect(ctx, pX - 1, poolY - 3, 3, 3, s, stoneL)
+  for (let y = poolY - 4; y >= poolY - 14; y--) {
+    px(ctx, pX, y, s, waterL)
+    if (y > poolY - 10) { px(ctx, pX - 1, y, s, water); px(ctx, pX + 1, y, s, water); }
+  }
+
+  // 水しぶき（放物線）
+  const topW = poolY - 14
+  for (let i = 0; i < 8; i++) {
+    const sy = topW + Math.floor(i * i * 0.3)
+    if (sy < poolY) {
+      px(ctx, pX - 1 - i, sy, s, splash); px(ctx, pX + 1 + i, sy, s, splash)
+    }
+  }
+  return { cx, poolLeft, poolRight }
+}
+
+// 噴水の構造に合わせた巣
+function drawFountainNest(ctx, ft, groundY, s) {
   const hole = '#1A1008'
+  const startX = ft.poolRight + 4 // 池の右側を入廊口とする
+  const depth = 30
+  const branchCount = 4
 
-  // 入口
-  px(ctx, cx, groundY, s, hole)
-  px(ctx, cx + 1, groundY, s, hole)
+  // 1. メインシャフト（垂直主軸）
+  let curX = startX
+  for (let y = 0; y <= depth; y++) {
+    const py = groundY + y
+    if (pseudoRandom(curX, py) > 0.8) curX++
+    else if (pseudoRandom(curX, py) < 0.2) curX--
+    
+    px(ctx, curX, py, s, hole)
+    px(ctx, curX + 1, py, s, hole)
 
-  // 縦トンネル1
-  for (let y = 1; y <= 5; y++) px(ctx, cx, groundY + y, s, hole)
-
-  // 左1
-  for (let x = -4; x <= -1; x++) px(ctx, cx + x, groundY + 3, s, hole)
-  for (let x = -6; x <= -3; x++) {
-    px(ctx, cx + x, groundY + 4, s, hole)
-    px(ctx, cx + x, groundY + 5, s, hole)
+    // 2. 枝穴（ブランチ）の生成
+    for (let i = 0; i < branchCount; i++) {
+      const branchY = Math.floor((depth / (branchCount + 1)) * (i + 1))
+      if (y === branchY) {
+        const dir = (i % 2 === 0) ? -1 : 1 // 互い違いに
+        let bx = curX + dir
+        let by = py
+        const branchLen = 8 + Math.floor(pseudoRandom(bx, by) * 12)
+        
+        for (let j = 0; j < branchLen; j++) {
+          by = Math.max(by, groundY + 2) // 地上への突き抜け防止
+          px(ctx, bx, by, s, hole)
+          px(ctx, bx, by + 1, s, hole)
+          bx += dir
+          if (pseudoRandom(bx, by) > 0.6) by-- // 上向き
+        }
+        
+        // 3. 部屋（チャンバー）
+        const rw = 4 + Math.floor(pseudoRandom(bx, by) * 3)
+        const rh = 3 + Math.floor(pseudoRandom(by, bx) * 2)
+        const cy = Math.max(by - rh, groundY + rh + 1)
+        drawOrganicChamber(ctx, bx, cy, rw, rh, s, hole)
+      }
+    }
   }
-  for (let x = -5; x <= -4; x++) px(ctx, cx + x, groundY + 6, s, hole)
 
-  // 右1
-  for (let x = 1; x <= 5; x++) px(ctx, cx + x, groundY + 5, s, hole)
-  for (let x = 4; x <= 8; x++) {
-    px(ctx, cx + x, groundY + 6, s, hole)
-    px(ctx, cx + x, groundY + 7, s, hole)
-  }
-  for (let x = 5; x <= 7; x++) px(ctx, cx + x, groundY + 8, s, hole)
-
-  // 縦トンネル2
-  for (let y = 6; y <= 9; y++) px(ctx, cx, groundY + y, s, hole)
-
-  // 左2
-  for (let x = -5; x <= -1; x++) px(ctx, cx + x, groundY + 9, s, hole)
-  for (let x = -8; x <= -4; x++) {
-    px(ctx, cx + x, groundY + 10, s, hole)
-    px(ctx, cx + x, groundY + 11, s, hole)
-  }
-  for (let x = -7; x <= -5; x++) px(ctx, cx + x, groundY + 12, s, hole)
-
-  // 右2
-  for (let x = 1; x <= 6; x++) px(ctx, cx + x, groundY + 9, s, hole)
-  for (let x = 5; x <= 10; x++) {
-    px(ctx, cx + x, groundY + 10, s, hole)
-    px(ctx, cx + x, groundY + 11, s, hole)
-  }
-  for (let x = 6; x <= 9; x++) px(ctx, cx + x, groundY + 12, s, hole)
-
-  // 縦トンネル3
-  for (let y = 10; y <= 15; y++) px(ctx, cx, groundY + y, s, hole)
-
-  // 左3
-  for (let x = -4; x <= -1; x++) px(ctx, cx + x, groundY + 14, s, hole)
-  for (let x = -7; x <= -3; x++) {
-    px(ctx, cx + x, groundY + 15, s, hole)
-    px(ctx, cx + x, groundY + 16, s, hole)
-  }
-  for (let x = -6; x <= -4; x++) px(ctx, cx + x, groundY + 17, s, hole)
-
-  // 右3
-  for (let x = 1; x <= 5; x++) px(ctx, cx + x, groundY + 15, s, hole)
-  for (let x = 4; x <= 9; x++) {
-    px(ctx, cx + x, groundY + 16, s, hole)
-    px(ctx, cx + x, groundY + 17, s, hole)
-  }
-  for (let x = 5; x <= 8; x++) px(ctx, cx + x, groundY + 18, s, hole)
-
-  // 縦トンネル4
-  for (let y = 16; y <= 21; y++) px(ctx, cx, groundY + y, s, hole)
-
-  // 左4
-  for (let x = -5; x <= -1; x++) px(ctx, cx + x, groundY + 20, s, hole)
-  for (let x = -9; x <= -4; x++) {
-    px(ctx, cx + x, groundY + 21, s, hole)
-    px(ctx, cx + x, groundY + 22, s, hole)
-  }
-  for (let x = -8; x <= -5; x++) px(ctx, cx + x, groundY + 23, s, hole)
-
-  // 右4（新規10部屋目）
-  for (let x = 1; x <= 6; x++) px(ctx, cx + x, groundY + 21, s, hole)
-  for (let x = 5; x <= 11; x++) {
-    px(ctx, cx + x, groundY + 22, s, hole)
-    px(ctx, cx + x, groundY + 23, s, hole)
-  }
-  for (let x = 6; x <= 10; x++) px(ctx, cx + x, groundY + 24, s, hole)
-
-  // 縦トンネル5
-  for (let y = 22; y <= 27; y++) px(ctx, cx, groundY + y, s, hole)
-
-  // 最下層
-  for (let x = -6; x <= 7; x++) {
-    px(ctx, cx + x, groundY + 28, s, hole)
-    px(ctx, cx + x, groundY + 29, s, hole)
-    px(ctx, cx + x, groundY + 30, s, hole)
-  }
-  for (let x = -5; x <= 6; x++) px(ctx, cx + x, groundY + 31, s, hole)
+  // 4. 女王の間（最下層）
+  drawOrganicChamber(ctx, curX, groundY + depth + 4, 7, 5, s, hole)
 }
 
 export function draw(ctx, pw, ph, s) {
   const groundY = Math.floor(ph * 0.45)
-
   drawSky(ctx, pw, groundY, s)
   drawUnderground(ctx, pw, ph, groundY, s)
 
-  const nestCx = Math.floor(pw / 2)
-
-  drawNest10(ctx, nestCx, groundY, s)
+  const ft = drawFountain(ctx, pw, groundY, s)
+  drawFountainNest(ctx, ft, groundY, s)
 
   drawGrass(ctx, pw, groundY, s, 12)
-
-  drawFountain(ctx, pw, groundY, s)
-
-  return { antX: nestCx, antY: groundY + 29 }
+  return { antX: ft.cx, antY: groundY + 33 }
 }
