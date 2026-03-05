@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.buy-mode-btn {
+  opacity: 0.4;
+}
+
+.buy-mode-btn.active {
+  opacity: 1;
+  text-shadow: 0 0 6px #fff, 0 0 2px #fff;
+}
