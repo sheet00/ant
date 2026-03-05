@@ -136,18 +136,33 @@ export function useGameState() {
     return total
   }
 
-  // 利用可能なアップグレード（購入済みの最大ID+1まで表示）
+  // 利用可能なアップグレード（系統ごとに購入済みの最大ID+3まで表示）
   const getAvailableUpgrades = () => {
     const purchasedIds = Object.keys(state.upgradeLevels).map(Number)
-    const maxPurchasedId = purchasedIds.length > 0 ? Math.max(...purchasedIds) : 0
     
-    return DIG_UPGRADES
-      .filter(upg => {
-        // 既に持っているものは除外
-        if (state.upgradeLevels[upg.id] >= 1) return false
-        // IDが購入済み最大ID + 1 以内のものだけ表示
-        return upg.id <= maxPurchasedId + 1
-      })
+    const maxFoodId = purchasedIds.filter(id => id < 26).length > 0 
+      ? Math.max(...purchasedIds.filter(id => id < 26)) 
+      : 0
+    
+    const maxElecId = purchasedIds.filter(id => id >= 26).length > 0 
+      ? Math.max(...purchasedIds.filter(id => id >= 26)) 
+      : 25
+
+    // 電気系を表示するかどうか（id:25「電気の発見」が購入済みか）
+    const isElectricUnlocked = state.upgradeLevels[25] >= 1
+
+    return DIG_UPGRADES.filter(upg => {
+      // 既に持っているものは除外
+      if (state.upgradeLevels[upg.id] >= 1) return false
+
+      if (upg.id < 26) {
+        // 食料系：購入済み最大ID+3まで表示（余裕を持たせる）
+        return upg.id <= maxFoodId + 3
+      } else {
+        // 電気系：電気開放済みかつ、購入済み最大ID+3まで
+        return isElectricUnlocked && upg.id <= maxElecId + 3
+      }
+    })
   }
 
   // マイルストーン情報
