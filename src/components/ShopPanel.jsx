@@ -23,12 +23,12 @@ export default function ShopPanel({ game }) {
 
   const diggerCost = getCost(state.diggers)
   const diggerMax = getMaxBuyable(state.diggers, state.food)
-  const diggerBuyAmount = buyMode === 'max' ? diggerMax : buyMode === 100 ? Math.min(100, diggerMax) : 1
+  const diggerBuyAmount = buyMode === 'max' ? diggerMax : Math.min(buyMode, diggerMax)
   const diggerTotalCost = getTotalCost(state.diggers, diggerBuyAmount)
 
   const foragerCost = getCost(state.foragers)
   const foragerMax = getMaxBuyable(state.foragers, state.food)
-  const foragerBuyAmount = buyMode === 'max' ? foragerMax : buyMode === 100 ? Math.min(100, foragerMax) : 1
+  const foragerBuyAmount = buyMode === 'max' ? foragerMax : Math.min(buyMode, foragerMax)
   const foragerTotalCost = getTotalCost(state.foragers, foragerBuyAmount)
 
   const availableUpgrades = getAvailableUpgrades()
@@ -40,21 +40,27 @@ export default function ShopPanel({ game }) {
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-widest">ユニット</h2>
-          <div className="flex bg-stone-800 rounded-lg overflow-hidden">
+          <div className="flex bg-stone-800 rounded-lg overflow-hidden border border-stone-700">
             <button
-              className={`buy-mode-btn px-3 py-1 text-sm font-bold text-white ${buyMode === 1 ? 'active' : ''}`}
+              className={`px-3 py-1 text-sm font-bold text-white transition-colors ${buyMode === 1 ? 'bg-amber-600' : 'hover:bg-stone-700'}`}
               onClick={() => setBuyMode(1)}
             >
               x1
             </button>
             <button
-              className={`buy-mode-btn px-3 py-1 text-sm font-bold text-white ${buyMode === 100 ? 'active' : ''}`}
+              className={`px-3 py-1 text-sm font-bold text-white transition-colors border-l border-stone-700 ${buyMode === 10 ? 'bg-amber-600' : 'hover:bg-stone-700'}`}
+              onClick={() => setBuyMode(10)}
+            >
+              x10
+            </button>
+            <button
+              className={`px-3 py-1 text-sm font-bold text-white transition-colors border-l border-stone-700 ${buyMode === 100 ? 'bg-amber-600' : 'hover:bg-stone-700'}`}
               onClick={() => setBuyMode(100)}
             >
               x100
             </button>
             <button
-              className={`buy-mode-btn px-3 py-1 text-sm font-bold text-white ${buyMode === 'max' ? 'active' : ''}`}
+              className={`px-3 py-1 text-sm font-bold text-white transition-colors border-l border-stone-700 ${buyMode === 'max' ? 'bg-amber-600' : 'hover:bg-stone-700'}`}
               onClick={() => setBuyMode('max')}
             >
               xMax
@@ -94,7 +100,7 @@ export default function ShopPanel({ game }) {
             const count = state.ants[ant.id] || 0
             const cost = getAntCost(ant)
             const maxBuy = getAntMaxBuyable(ant)
-            const buyAmount = buyMode === 'max' ? maxBuy : buyMode === 100 ? Math.min(100, maxBuy) : 1
+            const buyAmount = buyMode === 'max' ? maxBuy : Math.min(buyMode, maxBuy)
             const totalCost = getAntTotalCost(ant, buyAmount)
             const isElectric = ant.currency === 'electricity'
             const canBuy = isElectric ? state.electricity >= cost : state.food >= cost

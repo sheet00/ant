@@ -160,7 +160,7 @@ export function useGameState() {
   // 購入アクション
   const getBuyAmount = (maxBuyable) => {
     if (buyMode === 'max') return maxBuyable
-    if (buyMode === 100) return Math.min(100, maxBuyable)
+    if (typeof buyMode === 'number') return Math.min(buyMode, maxBuyable)
     return Math.min(1, maxBuyable)
   }
 
