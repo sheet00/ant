@@ -3,7 +3,7 @@
  */
 {
   "$schema": "src/node_modules/wrangler/config-schema.json",
-  "name": "ant-colony-simulator",
+  "name": "ant",
   "compatibility_date": "2024-09-19",
   "compatibility_flags": [
     "nodejs_compat"
