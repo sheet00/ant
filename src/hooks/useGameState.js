@@ -1,31 +1,43 @@
 import { useState, useEffect, useCallback } from 'react'
 import { DIG_UPGRADES, MILESTONES, UNITS } from '../data/gameData'
 
-const BASE_COST = 10
-const COST_MULTIPLIER = 1.0
+const DIFFICULTY = 1
+const DIGGER_BASE_COST = 1
+const DIGGER_COST_MULTIPLIER = 1.09
+const FORAGER_BASE_COST = 1
+const FORAGER_COST_MULTIPLIER = 1.05
 const UPGRADE_COST_MULT = 1.5
 
 export function useGameState() {
   const DEBUG = import.meta.env.DEV
 
   const [state, setState] = useState({
-    food: 50,
+    food: 60,
     electricity: 0,
-    diggers: 0,
-    foragers: 1,
+    diggers: 1,
+    foragers: 2,
     territory: 0,
     upgradeLevels: {},
     ants: {}, // アリ種類ID -> 所持数
     gameCleared: false,
   })
   const [buyMode, setBuyMode] = useState(1) // 1 or 'max'
+  const [difficulty, setDifficulty] = useState(0.1)
+  const activeDifficulty = DEBUG ? difficulty : DIFFICULTY
+
+  const getScaledMilestones = useCallback(() => {
+    return MILESTONES.map((milestone) => ({
+      ...milestone,
+      at: Math.floor(milestone.at * activeDifficulty),
+    }))
+  }, [activeDifficulty])
 
   // 採掘倍率を計算
   const calcDigMultiplier = useCallback((levels) => {
     let mult = 1
     for (const upg of DIG_UPGRADES) {
       const level = levels[upg.id] || 0
-      mult *= Math.pow(upg.mult, level)
+      mult *= Math.pow(upg.digMultiplier, level)
     }
     return mult
   }, [])
@@ -34,9 +46,9 @@ export function useGameState() {
   const calcFoodMultiplier = useCallback((levels) => {
     let mult = 1
     for (const upg of DIG_UPGRADES) {
-      if (upg.foodMult) {
+      if (upg.foodMultiplier) {
         const level = levels[upg.id] || 0
-        mult *= Math.pow(upg.foodMult, level)
+        mult *= Math.pow(upg.foodMultiplier, level)
       }
     }
     return mult
@@ -45,22 +57,47 @@ export function useGameState() {
   const digMultiplier = calcDigMultiplier(state.upgradeLevels)
   const foodMultiplier = calcFoodMultiplier(state.upgradeLevels)
 
-  // 追加ユニットによる採掘力（固定値）
-  const calcUnitPower = (ants) => UNITS.reduce((total, unit) => {
+  const getTerritoryScale = (unit, territory) => {
+    if (!unit.territoryPowerGrowth) return 1
+    const territoryFactor = Math.max(10, territory + 10)
+    return 1 + Math.log10(territoryFactor) * unit.territoryPowerGrowth
+  }
+
+  const getAntDigPower = (unit, count, territory) => {
+    if (!unit.power || count <= 0) return 0
+    return count * unit.power * getTerritoryScale(unit, territory)
+  }
+
+  const getAntEffectText = (unit, territory) => {
+    const effects = []
+    if (unit.id === 'generator') effects.push('電気 +0.2/匹・秒')
+    if (unit.power) {
+      const scaledPower = unit.power * getTerritoryScale(unit, territory)
+      const powerLabel = scaledPower >= 10 ? scaledPower.toFixed(1) : scaledPower.toFixed(2)
+      effects.push(`採掘 +${powerLabel}`)
+      if (unit.territoryPowerGrowth) effects.push('進行で上昇')
+    }
+    if (unit.digBonusMult) effects.push(`採掘倍率 +${Math.round(unit.digBonusMult * 100)}%`)
+    if (unit.foodBonusMult) effects.push(`食料倍率 +${Math.round(unit.foodBonusMult * 100)}%`)
+    return effects.join(' / ')
+  }
+
+  // 追加ユニットによる採掘力
+  const calcUnitPower = (ants, territory) => UNITS.reduce((total, unit) => {
     const count = ants[unit.id] || 0
-    return total + count * (unit.power || 0)
+    return total + getAntDigPower(unit, count, territory)
   }, 0)
 
   // 追加ユニットによる採掘倍率（%ボーナス）
   const calcUnitPowerMult = (ants) => UNITS.reduce((total, unit) => {
     const count = ants[unit.id] || 0
-    return total + count * (unit.powerMult || 0)
+    return total + count * (unit.digBonusMult || 0)
   }, 0)
 
   // 追加ユニットによる食料倍率（%ボーナス）
   const calcUnitFoodMult = (ants) => UNITS.reduce((total, unit) => {
     const count = ants[unit.id] || 0
-    return total + count * (unit.foodMult || 0)
+    return total + count * (unit.foodBonusMult || 0)
   }, 0)
 
   // アリの総数
@@ -74,10 +111,10 @@ export function useGameState() {
   const calcElectricityPerSec = (s) => {
     const generatorCount = s.ants['generator'] || 0
     const totalAnts = calcTotalAnts(s)
-    return generatorCount * totalAnts * 0.01 // アリ1匹あたり0.01電気/秒
+    return generatorCount * totalAnts * 0.2 // アリ1匹あたり0.2電気/秒
   }
 
-  const unitPower = calcUnitPower(state.ants)
+  const unitPower = calcUnitPower(state.ants, state.territory)
   const unitPowerMult = 1 + calcUnitPowerMult(state.ants)
   const unitFoodMult = 1 + calcUnitFoodMult(state.ants)
   const electricityPerSec = calcElectricityPerSec(state)
@@ -85,7 +122,7 @@ export function useGameState() {
   const totalDigMult = digMultiplier * unitPowerMult
   const totalFoodMult = foodMultiplier * unitFoodMult
   const digPower = baseDigPower * totalDigMult
-  const foodPerSec = state.foragers * totalFoodMult
+  const foodPerSec = state.foragers * 2.3 * totalFoodMult
 
   // アンロックされたアリ種類
   const getUnlockedAnts = () => {
@@ -93,19 +130,25 @@ export function useGameState() {
   }
 
   // コスト計算
-  const getCost = (owned) => Math.floor(BASE_COST * Math.pow(COST_MULTIPLIER, owned))
+  const getCost = (owned, role = 'digger') => {
+    const baseCost = role === 'forager' ? FORAGER_BASE_COST : DIGGER_BASE_COST
+    const costMultiplier = role === 'forager' ? FORAGER_COST_MULTIPLIER : DIGGER_COST_MULTIPLIER
+    return Math.floor(baseCost * Math.pow(costMultiplier, owned) * activeDifficulty)
+  }
 
-  const getTotalCost = (owned, n) => {
+  const getTotalCost = (owned, n, role = 'digger') => {
     if (n <= 0) return 0
-    const r = COST_MULTIPLIER
-    const first = BASE_COST * Math.pow(r, owned)
+    const baseCost = role === 'forager' ? FORAGER_BASE_COST : DIGGER_BASE_COST
+    const r = role === 'forager' ? FORAGER_COST_MULTIPLIER : DIGGER_COST_MULTIPLIER
+    const first = baseCost * Math.pow(r, owned) * activeDifficulty
     if (r === 1) return Math.floor(first * n)
     return Math.floor(first * (Math.pow(r, n) - 1) / (r - 1))
   }
 
-  const getMaxBuyable = (owned, food) => {
-    const r = COST_MULTIPLIER
-    const first = BASE_COST * Math.pow(r, owned)
+  const getMaxBuyable = (owned, food, role = 'digger') => {
+    const baseCost = role === 'forager' ? FORAGER_BASE_COST : DIGGER_BASE_COST
+    const r = role === 'forager' ? FORAGER_COST_MULTIPLIER : DIGGER_COST_MULTIPLIER
+    const first = baseCost * Math.pow(r, owned) * activeDifficulty
     if (first > food) return 0
     if (r === 1) return Math.floor(food / first)
     // food >= first * (r^n - 1) / (r - 1) を n について解く
@@ -116,7 +159,7 @@ export function useGameState() {
   // アップグレードコスト
   const getUpgradeCost = (upg, extraLevels = 0) => {
     const level = (state.upgradeLevels[upg.id] || 0) + extraLevels
-    return Math.floor(upg.cost * Math.pow(UPGRADE_COST_MULT, level))
+    return Math.floor(upg.cost * activeDifficulty * Math.pow(UPGRADE_COST_MULT, level))
   }
 
   const getUpgradeMaxBuyable = (upg) => {
@@ -138,7 +181,11 @@ export function useGameState() {
 
   // 利用可能なアップグレード（系統ごとに購入済みの最大ID+3まで表示）
   const getAvailableUpgrades = () => {
+    const scaledMilestones = getScaledMilestones()
     const purchasedIds = Object.keys(state.upgradeLevels).map(Number)
+    const earthMilestone = scaledMilestones.find(m => m.name === '🌍 地球')
+    const earthAt = earthMilestone ? earthMilestone.at : Infinity
+    const rocketPreviewAt = earthAt * 0.9
     
     const maxFoodId = purchasedIds.filter(id => id < 26).length > 0 
       ? Math.max(...purchasedIds.filter(id => id < 26)) 
@@ -156,23 +203,36 @@ export function useGameState() {
       if (state.upgradeLevels[upg.id] >= 1) return false
 
       if (upg.id < 26) {
+        if (upg.id === 25 && state.territory >= rocketPreviewAt) {
+          return true
+        }
         // 食料系：購入済み最大ID+3まで表示（余裕を持たせる）
         return upg.id <= maxFoodId + 3
       } else {
+        if (upg.id === 33 && state.territory >= rocketPreviewAt) {
+          return true
+        }
         // 電気系：電気開放済みかつ、購入済み最大ID+3まで
         return isElectricUnlocked && upg.id <= maxElecId + 3
       }
+    }).sort((a, b) => {
+      const aElectric = a.currency === 'electricity' ? 1 : 0
+      const bElectric = b.currency === 'electricity' ? 1 : 0
+      if (aElectric !== bElectric) return aElectric - bElectric
+      if (a.cost !== b.cost) return a.cost - b.cost
+      return a.id - b.id
     })
   }
 
   // マイルストーン情報
   const getMilestoneInfo = () => {
-    let current = MILESTONES[0]
-    let next = MILESTONES[1] || null
-    for (let i = 0; i < MILESTONES.length; i++) {
-      if (state.territory >= MILESTONES[i].at) {
-        current = MILESTONES[i]
-        next = MILESTONES[i + 1] || null
+    const scaledMilestones = getScaledMilestones()
+    let current = scaledMilestones[0]
+    let next = scaledMilestones[1] || null
+    for (let i = 0; i < scaledMilestones.length; i++) {
+      if (state.territory >= scaledMilestones[i].at) {
+        current = scaledMilestones[i]
+        next = scaledMilestones[i + 1] || null
       } else {
         break
       }
@@ -188,25 +248,25 @@ export function useGameState() {
   }
 
   const buyDigger = () => {
-    const maxBuyable = getMaxBuyable(state.diggers, state.food)
+    const maxBuyable = getMaxBuyable(state.diggers, state.food, 'digger')
     const n = getBuyAmount(maxBuyable)
     if (n <= 0) return
-    const cost = getTotalCost(state.diggers, n)
+    const cost = getTotalCost(state.diggers, n, 'digger')
     setState(s => ({ ...s, food: s.food - cost, diggers: s.diggers + n }))
   }
 
   const buyForager = () => {
-    const maxBuyable = getMaxBuyable(state.foragers, state.food)
+    const maxBuyable = getMaxBuyable(state.foragers, state.food, 'forager')
     const n = getBuyAmount(maxBuyable)
     if (n <= 0) return
-    const cost = getTotalCost(state.foragers, n)
+    const cost = getTotalCost(state.foragers, n, 'forager')
     setState(s => ({ ...s, food: s.food - cost, foragers: s.foragers + n }))
   }
 
   // アリ種類のコスト計算
   const getAntCost = (ant, extraCount = 0) => {
     const count = (state.ants[ant.id] || 0) + extraCount
-    return Math.floor(ant.baseCost * Math.pow(ant.costMult, count))
+    return Math.floor(ant.baseCost * Math.pow(ant.costMult, count) * activeDifficulty)
   }
   const getAntTotalCost = (ant, n) => {
     let total = 0
@@ -253,7 +313,7 @@ export function useGameState() {
     if (!upg) return
     // 既に持っていたら買えない
     if ((state.upgradeLevels[upg.id] || 0) >= 1) return
-    const cost = upg.cost
+    const cost = getUpgradeCost(upg)
     const isElectric = upg.currency === 'electricity'
     const currency = isElectric ? state.electricity : state.food
     if (currency < cost) return
@@ -274,10 +334,10 @@ export function useGameState() {
 
   const resetGame = () => {
     setState({
-      food: 50,
+      food: 60,
       electricity: 0,
-      diggers: 0,
-      foragers: 1,
+      diggers: 1,
+      foragers: 2,
       territory: 0,
       upgradeLevels: {},
       ants: {},
@@ -292,43 +352,41 @@ export function useGameState() {
     setState(s => ({ ...s, electricity: s.electricity + 1e30 }))
   }
   const forceGameClear = () => {
-    setState(s => ({ ...s, gameCleared: true, territory: 1e20 }))
+    const scaledMilestones = getScaledMilestones()
+    const universeGoal = scaledMilestones[scaledMilestones.length - 1].at
+    setState(s => ({ ...s, gameCleared: true, territory: universeGoal }))
   }
 
   // ゲームループ
   useEffect(() => {
     const interval = setInterval(() => {
       setState(s => {
+        const scaledMilestones = getScaledMilestones()
         const digMult = calcDigMultiplier(s.upgradeLevels)
         const foodMult = calcFoodMultiplier(s.upgradeLevels)
-        const uPower = calcUnitPower(s.ants)
+        const uPower = calcUnitPower(s.ants, s.territory)
         const uPowerMult = 1 + calcUnitPowerMult(s.ants)
         const uFoodMult = 1 + calcUnitFoodMult(s.ants)
         const elecPerSec = calcElectricityPerSec(s)
         const newDigPower = (s.diggers + uPower) * digMult * uPowerMult
-        const newFoodPerSec = s.foragers * uFoodMult * foodMult
+        const newFoodPerSec = s.foragers * 2.3 * uFoodMult * foodMult
         // クリア済みなら更新しない
         if (s.gameCleared) return s
-        let newTerritory = s.territory + newDigPower * 0.01
-        // ロケット開発(id:33)未購入なら地球(1e11)でキャップ
-        const EARTH_CAP = 1e11
-        if (!s.upgradeLevels[33] && newTerritory > EARTH_CAP) {
-          newTerritory = EARTH_CAP
-        }
-        // 宇宙(1e20)到達でゲームクリア
-        const UNIVERSE_GOAL = 1e20
-        const cleared = newTerritory >= UNIVERSE_GOAL
+        let newTerritory = s.territory + newDigPower * 0.2
+        // 宇宙到達でゲームクリア
+        const universeGoal = scaledMilestones[scaledMilestones.length - 1].at
+        const cleared = newTerritory >= universeGoal
         return {
           ...s,
           food: s.food + newFoodPerSec * 0.1,
           electricity: s.electricity + elecPerSec * 0.1,
-          territory: cleared ? UNIVERSE_GOAL : newTerritory,
+          territory: cleared ? universeGoal : newTerritory,
           gameCleared: cleared || s.gameCleared,
         }
       })
     }, 100)
     return () => clearInterval(interval)
-  }, [calcDigMultiplier, calcFoodMultiplier])
+  }, [calcDigMultiplier, calcFoodMultiplier, getScaledMilestones])
 
   // 合計アップグレード数
   const totalUpgrades = Object.values(state.upgradeLevels).reduce((a, b) => a + b, 0)
@@ -341,6 +399,8 @@ export function useGameState() {
     foodPerSec,
     totalFoodMult,
     electricityPerSec,
+    difficulty: activeDifficulty,
+    setDifficulty,
     totalUpgrades,
     buyMode,
     setBuyMode,
@@ -364,6 +424,7 @@ export function useGameState() {
     getAntCost,
     getAntTotalCost,
     getAntMaxBuyable,
+    getAntEffectText,
     buyAnt,
   }
 }

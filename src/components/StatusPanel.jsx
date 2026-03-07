@@ -3,21 +3,28 @@ import { formatNumber } from '../utils/format'
 export default function StatusPanel({ game }) {
   const { state, baseDigPower, digPower, totalDigMult, foodPerSec, totalFoodMult, electricityPerSec, getMilestoneInfo } = game
   const { current, next } = getMilestoneInfo()
+  const showRocketHint = current.name === '🌍 地球' && !state.upgradeLevels[33]
 
   const progressStart = current.at
   const progressEnd = next ? next.at : current.at
   const progressNow = state.territory - progressStart
   const progressTotal = progressEnd - progressStart
   const percent = next ? Math.min(100, Math.floor((progressNow / progressTotal) * 100)) : 100
+  const remaining = next ? Math.max(0, Math.ceil(progressEnd - state.territory)) : 0
 
   return (
     <aside className="w-72 bg-stone-800 border-r border-stone-700 flex flex-col gap-4 p-4">
-      {/* 領地マイルストーン */}
+      {/* 進行マイルストーン */}
       <div className="bg-stone-700/50 rounded-lg p-3">
         <div className="text-xl text-center font-bold">{current.name}</div>
         <div className="text-stone-400 text-xs text-center mt-1">
-          領地: <span className="text-blue-400 font-bold">{formatNumber(Math.floor(state.territory))}</span> マス
+          {next ? <>次の到達先まで <span className="text-blue-400 font-bold">{formatNumber(remaining)}</span></> : '宇宙到達済み'}
         </div>
+        {showRocketHint && (
+          <div className="text-yellow-300 text-[11px] text-center mt-2">
+            次は「電気の発見」から「ロケット開発」
+          </div>
+        )}
 
         <div className="mt-3">
           <div className="flex justify-between text-xs text-stone-400 mb-1">
@@ -31,7 +38,7 @@ export default function StatusPanel({ game }) {
             />
           </div>
           <div className="text-xs text-stone-500 text-right mt-1">
-            {formatNumber(Math.floor(state.territory))} / {next ? formatNumber(next.at) : '∞'}
+            {next ? `${formatNumber(percent)}%` : '100%'}
           </div>
         </div>
       </div>

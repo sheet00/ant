@@ -11,6 +11,7 @@ export default function ShopPanel({ game }) {
     getCost,
     getTotalCost,
     getMaxBuyable,
+    getUpgradeCost,
     getAvailableUpgrades,
     buyDigger,
     buyForager,
@@ -18,10 +19,13 @@ export default function ShopPanel({ game }) {
     addDebugFood,
     addDebugElectricity,
     forceGameClear,
+    difficulty,
+    setDifficulty,
     getUnlockedAnts,
     getAntCost,
     getAntTotalCost,
     getAntMaxBuyable,
+    getAntEffectText,
     buyAnt,
   } = game
 
@@ -50,7 +54,7 @@ export default function ShopPanel({ game }) {
     } else if (type === 'forager') {
       name = '採餌アリ'
       desc = '危険な地上へと向かい、仲間たちの命を繋ぐ食料を運ぶ冒険者。'
-      effect = '食料生産 +1/秒'
+      effect = '食料生産 +2.3/秒'
       colorClass = 'text-red-400'
     } else if (type === 'ant') {
       const ant = UNITS.find(a => a.id === id)
@@ -58,12 +62,7 @@ export default function ShopPanel({ game }) {
       name = ant.name
       desc = ant.desc
       colorClass = ant.currency === 'electricity' ? 'text-yellow-300' : 'text-emerald-300'
-      const effects = []
-      if (ant.id === 'generator') effects.push('電気 +0.01/匹·秒')
-      if (ant.power) effects.push(`採掘 +${ant.power}`)
-      if (ant.powerMult) effects.push(`採掘倍率 +${Math.round(ant.powerMult * 100)}%`)
-      if (ant.foodMult) effects.push(`食料倍率 +${Math.round(ant.foodMult * 100)}%`)
-      effect = effects.join(' / ')
+      effect = getAntEffectText(ant, state.territory)
     } else if (type === 'upgrade') {
       const upg = DIG_UPGRADES.find(u => u.id === id)
       if (!upg) { setHoveredInfo(null); return }
@@ -71,8 +70,8 @@ export default function ShopPanel({ game }) {
       desc = upg.desc
       colorClass = 'text-stone-100'
       const effects = []
-      if (upg.mult > 1) effects.push(`採掘倍率 +${Math.round((upg.mult - 1) * 100)}%`)
-      if (upg.foodMult > 1) effects.push(`食料倍率 +${Math.round((upg.foodMult - 1) * 100)}%`)
+      if (upg.digMultiplier > 1) effects.push(`採掘倍率 +${Math.round((upg.digMultiplier - 1) * 100)}%`)
+      if (upg.foodMultiplier > 1) effects.push(`食料倍率 +${Math.round((upg.foodMultiplier - 1) * 100)}%`)
       if (upg.type === 'unlock') effects.push('新しいユニットの解禁')
       effect = effects.join(' / ')
     }
@@ -96,15 +95,15 @@ export default function ShopPanel({ game }) {
     mousePos.current = { x: e.clientX, y: e.clientY }
   }
 
-  const diggerCost = getCost(state.diggers)
-  const diggerMax = getMaxBuyable(state.diggers, state.food)
+  const diggerCost = getCost(state.diggers, 'digger')
+  const diggerMax = getMaxBuyable(state.diggers, state.food, 'digger')
   const diggerBuyAmount = buyMode === 'max' ? diggerMax : Math.min(buyMode, diggerMax)
-  const diggerTotalCost = getTotalCost(state.diggers, diggerBuyAmount)
+  const diggerTotalCost = getTotalCost(state.diggers, diggerBuyAmount, 'digger')
 
-  const foragerCost = getCost(state.foragers)
-  const foragerMax = getMaxBuyable(state.foragers, state.food)
+  const foragerCost = getCost(state.foragers, 'forager')
+  const foragerMax = getMaxBuyable(state.foragers, state.food, 'forager')
   const foragerBuyAmount = buyMode === 'max' ? foragerMax : Math.min(buyMode, foragerMax)
-  const foragerTotalCost = getTotalCost(state.foragers, foragerBuyAmount)
+  const foragerTotalCost = getTotalCost(state.foragers, foragerBuyAmount, 'forager')
 
   return (
     <section 
@@ -155,7 +154,7 @@ export default function ShopPanel({ game }) {
           >
             <div className="text-stone-200 font-bold text-sm">採餌アリ</div>
             <div className="text-red-400 text-xl font-bold">{formatNumber(state.foragers)}</div>
-            <div className="text-stone-400 text-xs font-bold">食料 +1/秒</div>
+            <div className="text-stone-400 text-xs font-bold">食料 +2.3/秒</div>
             <div className="text-amber-400 text-xs font-bold mt-1">
               🍎{buyMode === 1 || foragerBuyAmount <= 1 ? formatNumber(foragerCost) : formatNumber(foragerTotalCost)}
             </div>
@@ -172,12 +171,7 @@ export default function ShopPanel({ game }) {
             const canBuy = isElectric ? state.electricity >= cost : state.food >= cost
 
             // ボタン表示用の効果
-            const effects = []
-            if (ant.id === 'generator') effects.push('電気 +0.01/匹·秒')
-            if (ant.power) effects.push(`採掘 +${ant.power}`)
-            if (ant.powerMult) effects.push(`採掘倍率 +${Math.round(ant.powerMult * 100)}%`)
-            if (ant.foodMult) effects.push(`食料倍率 +${Math.round(ant.foodMult * 100)}%`)
-            const effectLabel = effects.join(' / ')
+            const effectLabel = getAntEffectText(ant, state.territory)
 
             return (
               <button
@@ -207,7 +201,8 @@ export default function ShopPanel({ game }) {
           <div className="grid grid-cols-2 gap-2">
             {availableUpgrades.map(upg => {
               const isElectric = upg.currency === 'electricity'
-              const canBuy = isElectric ? state.electricity >= upg.cost : state.food >= upg.cost
+              const cost = getUpgradeCost(upg)
+              const canBuy = isElectric ? state.electricity >= cost : state.food >= cost
               return (
                 <button
                   key={upg.id}
@@ -228,14 +223,14 @@ export default function ShopPanel({ game }) {
                   <div className="text-stone-100 font-bold text-sm leading-tight mb-auto">{upg.name}</div>
                   <div className="flex justify-between items-end mt-2">
                     <div className="flex flex-col gap-0.5">
-                      {upg.mult > 1 && (
+                      {upg.digMultiplier > 1 && (
                         <span className="text-blue-300 text-xs font-bold leading-none">
-                          採掘 +{Math.round((upg.mult - 1) * 100)}%
+                          採掘 +{Math.round((upg.digMultiplier - 1) * 100)}%
                         </span>
                       )}
-                      {upg.foodMult > 1 && (
+                      {upg.foodMultiplier > 1 && (
                         <span className="text-amber-300 text-xs font-bold leading-none">
-                          食料 +{Math.round((upg.foodMult - 1) * 100)}%
+                          食料 +{Math.round((upg.foodMultiplier - 1) * 100)}%
                         </span>
                       )}
                       {upg.type === 'unlock' && (
@@ -245,7 +240,7 @@ export default function ShopPanel({ game }) {
                       )}
                     </div>
                     <span className={`text-base font-bold ${isElectric ? 'text-yellow-300' : 'text-amber-400'}`}>
-                      {isElectric ? '⚡' : '🍎'}{formatNumber(upg.cost)}
+                      {isElectric ? '⚡' : '🍎'}{formatNumber(cost)}
                     </span>
                   </div>
                 </button>
@@ -264,6 +259,24 @@ export default function ShopPanel({ game }) {
         <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-stone-800">
           <h2 className="text-xs font-semibold text-stone-500 uppercase tracking-widest text-center">デバッグメニュー</h2>
           <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
+              <div className="text-[11px] text-stone-500 text-center">難易度 {difficulty}</div>
+              <div className="grid grid-cols-4 gap-1">
+                {[0.05, 0.1, 0.2, 1].map(value => (
+                  <button
+                    key={value}
+                    onClick={() => setDifficulty(value)}
+                    className={`rounded-md py-2 text-xs font-bold border transition-colors ${
+                      difficulty === value
+                        ? 'bg-blue-700 border-blue-500 text-blue-100'
+                        : 'bg-stone-800 border-stone-700 text-stone-300 hover:bg-stone-700'
+                    }`}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="flex gap-2">
               <button onClick={addDebugFood} className="flex-1 bg-stone-800 hover:bg-stone-700 border border-amber-700 rounded-lg py-3 text-sm text-amber-400 font-bold active:scale-95 transition-transform">🍎 食料+</button>
               <button onClick={addDebugElectricity} className="flex-1 bg-stone-800 hover:bg-stone-700 border border-yellow-700 rounded-lg py-3 text-sm text-yellow-300 font-bold active:scale-95 transition-transform">⚡ 電気+</button>
