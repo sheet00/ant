@@ -1,5 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
-import { DIG_UPGRADES, MILESTONES, UNITS } from '../data/gameData'
+import {
+  DIG_UPGRADES,
+  ELECTRIC_UNIT_COST_MULTIPLIER,
+  FOOD_UNIT_COST_MULTIPLIER,
+  MILESTONES,
+  UNITS,
+} from '../data/gameData'
 
 const DIFFICULTY = 1
 const DIGGER_BASE_COST = 1
@@ -266,7 +272,11 @@ export function useGameState() {
   // アリ種類のコスト計算
   const getAntCost = (ant, extraCount = 0) => {
     const count = (state.ants[ant.id] || 0) + extraCount
-    return Math.floor(ant.baseCost * Math.pow(ant.costMult, count) * activeDifficulty)
+    const defaultCostMultiplier = ant.currency === 'electricity'
+      ? ELECTRIC_UNIT_COST_MULTIPLIER
+      : FOOD_UNIT_COST_MULTIPLIER
+    const costMultiplier = ant.costMult ?? defaultCostMultiplier
+    return Math.floor(ant.baseCost * Math.pow(costMultiplier, count) * activeDifficulty)
   }
   const getAntTotalCost = (ant, n) => {
     let total = 0
