@@ -12,7 +12,7 @@ function App() {
   const game = useGameState()
 
   return (
-    <div className="bg-stone-900 text-stone-100 min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-[#f2e8d8] text-stone-800">
       <Header />
       
       <main className="flex flex-1 overflow-hidden relative">

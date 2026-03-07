@@ -16,24 +16,24 @@ export default function Tooltip({ data }) {
 
   return createPortal(
     <div
-      className="pointer-events-none bg-stone-900 border-2 border-stone-500 p-4 rounded-xl shadow-[0_10px_50px_rgba(0,0,0,0.9)] text-stone-200 animate-in fade-in zoom-in duration-150"
+      className="pointer-events-none rounded-xl border-2 border-stone-300 bg-[rgba(255,250,242,0.96)] p-4 text-stone-700 shadow-[0_10px_40px_rgba(120,84,43,0.18)] animate-in fade-in zoom-in duration-150"
       style={style}
     >
-      <div className={`font-bold text-lg mb-2 border-b border-stone-700 pb-1 ${colorClass || 'text-stone-100'}`}>
+      <div className={`mb-2 border-b border-stone-200 pb-1 text-lg font-bold ${colorClass || 'text-stone-800'}`}>
         {name}
       </div>
-      <div className="text-sm text-stone-300 leading-relaxed mb-3">
+      <div className="mb-3 text-sm leading-relaxed text-stone-600">
         {desc}
       </div>
       {effect && (
-        <div className="text-sm font-bold text-amber-300 flex items-center gap-2">
-          <span className="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+        <div className="flex items-center gap-2 text-sm font-bold text-amber-700">
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
           {effect}
         </div>
       )}
       {/* 矢印 */}
       <div 
-        className="absolute top-4 -right-2 w-4 h-4 bg-stone-900 border-r-2 border-t-2 border-stone-500 rotate-45"
+        className="absolute top-4 -right-2 h-4 w-4 rotate-45 border-r-2 border-t-2 border-stone-300 bg-[rgba(255,250,242,0.96)]"
       />
     </div>,
     document.body
