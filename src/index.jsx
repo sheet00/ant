@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import { useGameState } from './hooks/useGameState'
 import Header from './components/Header'
 import StatusPanel from './components/StatusPanel'
-import AntVisual from './components/AntVisual'
+import ColonyPanel from './components/ColonyPanel'
 import ShopPanel from './components/ShopPanel'
 import './index.css'
 
@@ -17,7 +17,7 @@ function App() {
       
       <main className="flex flex-1 overflow-hidden relative">
         <StatusPanel game={game} />
-        <AntVisual game={game} />
+        <ColonyPanel />
         <ShopPanel game={game} />
       </main>
 

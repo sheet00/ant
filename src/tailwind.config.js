@@ -4,7 +4,6 @@ export default {
     "./index.html",
     "./App.jsx",
     "./components/**/*.{js,jsx}",
-    "./canvas/**/*.{js,jsx}",
     "./hooks/**/*.{js,jsx}",
     "./data/**/*.{js,jsx}",
     "./utils/**/*.{js,jsx}"
