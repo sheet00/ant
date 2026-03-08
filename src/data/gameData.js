@@ -70,7 +70,7 @@ export const UNITS = [
     name: "アブラムシ牧場",
     desc: "アブラムシを保護し、甘露を収穫する。アリたちの貴重なエネルギー源となる。",
     baseCost: 64000,
-    foodBonusMult: 2.0,
+    foodBonusMult: 2.5,
     unlockedBy: 19,
   },
   {
@@ -109,7 +109,7 @@ export const UNITS = [
   {
     id: "electricDrill",
     name: "電動ドリル",
-    desc: "電気で高速掘削",
+    desc: "回転力を電動化し、手作業では届かない速度で地層を切り開く。",
     baseCost: 10,
     digBonusMult: 0.8,
     unlockedBy: 26,
@@ -118,7 +118,7 @@ export const UNITS = [
   {
     id: "dynamite",
     name: "発破掘削",
-    desc: "爆破で岩盤を砕く",
+    desc: "制御爆破で硬い岩盤を先に割り、掘削ルートを一気に通す。",
     baseCost: 40,
     digBonusMult: 1.2,
     unlockedBy: 27,
@@ -127,7 +127,7 @@ export const UNITS = [
   {
     id: "shieldMachine",
     name: "シールドマシン",
-    desc: "巨大掘削機で自動掘削",
+    desc: "前方を守りながら進む大型掘削機で、崩落リスクを抑えて掘る。",
     baseCost: 150,
     digBonusMult: 1.8,
     unlockedBy: 28,
@@ -136,7 +136,7 @@ export const UNITS = [
   {
     id: "nuclearDrill",
     name: "原子力掘削",
-    desc: "原子力で無限パワー",
+    desc: "高密度エネルギーで駆動する掘削機が、深層でも出力を維持する。",
     baseCost: 600,
     digBonusMult: 3.0,
     unlockedBy: 30,
@@ -158,35 +158,35 @@ export const DIG_UPGRADES = [
   {
     id: 1,
     name: "大顎の硬化",
-    desc: "キチン質が厚くなり欠けにくい",
+    desc: "顎のキチン層が分厚くなり、硬い土にも歯が立つようになる。",
     digMultiplier: 1.15,
     cost: 30,
   },
   {
     id: 2,
     name: "複眼の発達",
-    desc: "土の柔らかい部分を見分ける",
+    desc: "土粒の違いを見抜き、掘るべき場所を最短で選べるようになる。",
     digMultiplier: 1.15,
     cost: 90,
   },
   {
     id: 3,
     name: "触角の感度UP",
-    desc: "土質を感知して効率よく掘る",
+    desc: "触角がわずかな振動を拾い、崩れやすい層を正確に探知する。",
     digMultiplier: 1.2,
     cost: 180,
   },
   {
     id: 4,
     name: "脚の爪強化",
-    desc: "踏ん張りが効いて力が入る",
+    desc: "爪の食いつきが増し、急斜面でも体勢を崩さず掘り進められる。",
     digMultiplier: 1.2,
     cost: 320,
   },
   {
     id: 5,
     name: "唾液腺の発達",
-    desc: "唾液で土を湿らせて崩しやすく",
+    desc: "唾液で土をほどよく湿らせ、崩す・運ぶの両効率を底上げする。",
     digMultiplier: 1.25,
     cost: 600,
     foodMultiplier: 1.08,
@@ -194,7 +194,7 @@ export const DIG_UPGRADES = [
   {
     id: 6,
     name: "兵隊アリ",
-    desc: "戦闘用の強い顎を掘削に活用",
+    desc: "戦闘向けの頑丈な顎を土木に投入。前線の掘削速度が一段上がる。",
     digMultiplier: 1,
     cost: 1100,
     type: "unlock",
@@ -203,7 +203,7 @@ export const DIG_UPGRADES = [
   {
     id: 7,
     name: "フェロモンマーキング",
-    desc: "掘るべき場所を共有",
+    desc: "掘削ルートをフェロモンで共有し、迷いと重複作業を減らす。",
     digMultiplier: 1.25,
     foodMultiplier: 1.08,
     cost: 1800,
@@ -211,7 +211,7 @@ export const DIG_UPGRADES = [
   {
     id: 8,
     name: "シフト制労働",
-    desc: "24時間稼働で効率UP",
+    desc: "休憩と交代を最適化し、巣の作業ラインを昼夜止めずに回す。",
     digMultiplier: 1,
     foodMultiplier: 1.1,
     cost: 6000,
@@ -220,7 +220,7 @@ export const DIG_UPGRADES = [
   {
     id: 9,
     name: "リレー運搬",
-    desc: "土を順番に運んで渋滞解消",
+    desc: "受け渡し地点を設けることで、長距離運搬の渋滞を解消する。",
     digMultiplier: 1.35,
     foodMultiplier: 1.1,
     cost: 4200,
@@ -228,7 +228,7 @@ export const DIG_UPGRADES = [
   {
     id: 10,
     name: "廃土置き場の整理",
-    desc: "掘った土を効率よく処理",
+    desc: "廃土の仮置きと搬出動線を分離し、掘削班の足を止めない。",
     digMultiplier: 1,
     foodMultiplier: 1.08,
     cost: 8000,
@@ -238,7 +238,7 @@ export const DIG_UPGRADES = [
   {
     id: 11,
     name: "換気トンネル",
-    desc: "空気の流れで酸素供給",
+    desc: "空気の通り道を整え、深部作業でも酸素不足を起こしにくくする。",
     digMultiplier: 1,
     foodMultiplier: 1.08,
     cost: 16000,
@@ -247,7 +247,7 @@ export const DIG_UPGRADES = [
   {
     id: 12,
     name: "非常口の設置",
-    desc: "緊急時の避難経路を確保",
+    desc: "緊急退避路を増設し、通路封鎖時の迂回ロスを最小化する。",
     digMultiplier: 1,
     cost: 12000,
     type: "unlock",
@@ -255,7 +255,7 @@ export const DIG_UPGRADES = [
   {
     id: 15,
     name: "菌類との共生",
-    desc: "菌類を栽培して食料確保",
+    desc: "栄養価の高い菌類を安定培養し、採餌の不確実性を下げる。",
     digMultiplier: 1,
     foodMultiplier: 1.12,
     cost: 30000,
@@ -264,7 +264,7 @@ export const DIG_UPGRADES = [
   {
     id: 16,
     name: "複数の女王",
-    desc: "繁殖力を大幅に向上",
+    desc: "産卵拠点を分散し、コロニー全体の供給力を継続的に高める。",
     digMultiplier: 1,
     foodMultiplier: 1.12,
     cost: 60000,
@@ -273,7 +273,7 @@ export const DIG_UPGRADES = [
   {
     id: 17,
     name: "巣の分割",
-    desc: "本巣とサテライト拠点に機能を分離し、連携運用を開始",
+    desc: "本巣とサテライト拠点で役割を分担し、往復ロスを大幅に削減する。",
     digMultiplier: 1,
     foodMultiplier: 1.15,
     cost: 120000,
@@ -282,7 +282,7 @@ export const DIG_UPGRADES = [
   {
     id: 18,
     name: "農業の発明",
-    desc: "そのへんの葉っぱを拾う時代は終わり。今日からコロニー総出の量産体制。",
+    desc: "採るだけの時代を卒業。計画栽培で食料供給を量産フェーズへ移行する。",
     digMultiplier: 1,
     foodMultiplier: 1.2,
     cost: 600000,
@@ -290,7 +290,7 @@ export const DIG_UPGRADES = [
   {
     id: 19,
     name: "他種の家畜化",
-    desc: "アブラムシから甘露を収穫",
+    desc: "アブラムシを保護・誘導し、甘露の収穫ラインを安定化させる。",
     digMultiplier: 1,
     foodMultiplier: 1.2,
     cost: 250000,
@@ -299,7 +299,7 @@ export const DIG_UPGRADES = [
   {
     id: 20,
     name: "広域ネットワーク",
-    desc: "複数コロニーが情報共有",
+    desc: "離れた巣同士で情報を同期し、資源偏在への対応速度を上げる。",
     digMultiplier: 1.4,
     foodMultiplier: 1.2,
     cost: 2000000,
@@ -308,7 +308,7 @@ export const DIG_UPGRADES = [
   {
     id: 21,
     name: "道具の発明",
-    desc: "小枝や石を使って掘削",
+    desc: "小枝と石片を道具化し、顎だけでは難しい地層にも対応する。",
     digMultiplier: 1.5,
     foodMultiplier: 1.08,
     cost: 7000000,
@@ -316,7 +316,7 @@ export const DIG_UPGRADES = [
   {
     id: 22,
     name: "水路の開発",
-    desc: "水で土を流して運搬効率UP",
+    desc: "微小な水路で土砂を流し、運搬班の負担を機械的に置き換える。",
     digMultiplier: 1.6,
     foodMultiplier: 1.08,
     cost: 14000000,
@@ -324,7 +324,7 @@ export const DIG_UPGRADES = [
   {
     id: 23,
     name: "車輪の発明",
-    desc: "運搬効率が大幅に向上",
+    desc: "回転運搬の仕組みを導入し、長距離輸送の時間当たり処理量を伸ばす。",
     digMultiplier: 1,
     cost: 28000000,
     type: "unlock",
@@ -332,7 +332,7 @@ export const DIG_UPGRADES = [
   {
     id: 24,
     name: "金属加工",
-    desc: "金属製の道具を製造",
+    desc: "回収した金属片を加工し、耐久性の高い掘削具を量産する。",
     digMultiplier: 1,
     cost: 42000000,
     type: "unlock",
@@ -340,7 +340,7 @@ export const DIG_UPGRADES = [
   {
     id: 25,
     name: "電気の発見",
-    desc: "アリ酸で発電する",
+    desc: "化学反応から電力を引き出し、文明を次の時代へ押し上げる。",
     digMultiplier: 1,
     cost: 56000000,
     type: "unlock",
@@ -349,7 +349,7 @@ export const DIG_UPGRADES = [
   {
     id: 26,
     name: "電動ドリル",
-    desc: "電気で高速掘削",
+    desc: "回転力を電動化し、手作業では届かない速度で地層を切り開く。",
     digMultiplier: 1,
     cost: 10,
     type: "unlock",
@@ -358,7 +358,7 @@ export const DIG_UPGRADES = [
   {
     id: 27,
     name: "ダイナマイト",
-    desc: "爆破で岩盤を砕く",
+    desc: "制御爆破で硬い岩盤を先に割り、掘削ルートを一気に通す。",
     digMultiplier: 1,
     cost: 30,
     type: "unlock",
@@ -367,7 +367,7 @@ export const DIG_UPGRADES = [
   {
     id: 28,
     name: "シールドマシン",
-    desc: "巨大掘削機で自動掘削",
+    desc: "前方を守りながら進む大型掘削機で、崩落リスクを抑えて掘る。",
     digMultiplier: 1,
     cost: 100,
     type: "unlock",
@@ -376,7 +376,7 @@ export const DIG_UPGRADES = [
   {
     id: 29,
     name: "コンピュータ制御",
-    desc: "最適ルートを自動計算",
+    desc: "掘削・運搬・換気を同時最適化し、無駄な移動をほぼ消し去る。",
     digMultiplier: 1.8,
     cost: 250,
     currency: "electricity",
@@ -384,7 +384,7 @@ export const DIG_UPGRADES = [
   {
     id: 30,
     name: "原子力ドリル",
-    desc: "原子力で無限パワー",
+    desc: "高密度エネルギーで駆動する掘削機が、深層でも出力を維持する。",
     digMultiplier: 1,
     cost: 800,
     type: "unlock",
@@ -393,7 +393,7 @@ export const DIG_UPGRADES = [
   {
     id: 31,
     name: "レーザー掘削",
-    desc: "光線で岩を蒸発",
+    desc: "高出力レーザーで障害層を蒸発させ、通路を直線的に貫通する。",
     digMultiplier: 1,
     cost: 2500,
     type: "unlock",
@@ -402,7 +402,7 @@ export const DIG_UPGRADES = [
   {
     id: 32,
     name: "ロケット開発",
-    desc: "宇宙進出に向けた輸送技術を確立し、長距離掘削の効率を底上げする",
+    desc: "推進工学を転用し、超長距離輸送と深層掘削の連携効率を高める。",
     digMultiplier: 1.5,
     cost: 12000,
     currency: "electricity",
@@ -410,7 +410,7 @@ export const DIG_UPGRADES = [
   {
     id: 33,
     name: "AI自律掘削",
-    desc: "AIが勝手に最適化",
+    desc: "自律制御が現場判断を代替し、最適な掘削計画を常時更新する。",
     digMultiplier: 2.5,
     cost: 30000,
     currency: "electricity",
@@ -418,7 +418,7 @@ export const DIG_UPGRADES = [
   {
     id: 34,
     name: "核融合",
-    desc: "太陽と同じエネルギー",
+    desc: "膨大で安定した出力が、コロニー全設備を同時に駆動する。",
     digMultiplier: 3.0,
     cost: 120000,
     currency: "electricity",
@@ -426,7 +426,7 @@ export const DIG_UPGRADES = [
   {
     id: 35,
     name: "反物質エンジン",
-    desc: "宇宙最強のエネルギー",
+    desc: "極限のエネルギー源を制御し、掘削文明は事実上の上限を失う。",
     digMultiplier: 4.0,
     cost: 500000,
     currency: "electricity",
