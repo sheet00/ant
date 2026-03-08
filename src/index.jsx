@@ -17,7 +17,7 @@ function App() {
       
       <main className="flex flex-1 overflow-hidden relative">
         <StatusPanel game={game} />
-        <ColonyPanel />
+        <ColonyPanel game={game} />
         <ShopPanel game={game} />
       </main>
 

@@ -1,7 +1,11 @@
 import miningAntImage from '../assets/02_掘削アリ.png'
 import foragerAntImage from '../assets/01_採餌アリ.png'
+import wasteAreaImage from '../assets/03_廃土置き場.png'
 
-export default function ColonyPanel() {
+export default function ColonyPanel({ game }) {
+  const wasteAreaCount = game?.state?.ants?.wasteArea || 0
+  const hasWasteArea = wasteAreaCount > 0
+
   return (
     <section className="flex-1 bg-[#f5ecda] p-6">
       <div className="mx-auto flex h-full max-w-5xl items-center justify-center">
@@ -17,6 +21,13 @@ export default function ColonyPanel() {
               alt="餌アリ"
               className="max-h-[320px] max-w-[42%] min-w-[220px] object-contain"
             />
+            {hasWasteArea && (
+              <img
+                src={wasteAreaImage}
+                alt="廃土置き場"
+                className="max-h-[320px] max-w-[42%] min-w-[220px] object-contain"
+              />
+            )}
           </div>
         </div>
       </div>
