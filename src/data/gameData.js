@@ -59,7 +59,7 @@ export const UNITS = [
   {
     id: "subColony",
     name: "サテライト巣",
-    desc: "食料源に近い場所に作った第2の拠点。移動時間を短縮し、広範囲を同時に支配する。",
+    desc: "本巣とは別機能を担う第2拠点。2つの巣を連絡路で結び、役割分担で往復の無駄を減らして全体効率を引き上げる。",
     baseCost: 30000,
     power: 15000,
     foodBonusMult: 0.35,
@@ -273,7 +273,7 @@ export const DIG_UPGRADES = [
   {
     id: 17,
     name: "巣の分割",
-    desc: "新しいコロニーを設立",
+    desc: "本巣とサテライト巣に機能を分離し、連携運用を開始",
     digMultiplier: 1,
     foodMultiplier: 1.15,
     cost: 220000,
