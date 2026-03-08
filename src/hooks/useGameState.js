@@ -7,7 +7,7 @@ import {
   UNITS,
 } from '../data/gameData'
 
-const DIFFICULTY = 1
+const DIFFICULTY = 0.2
 const DIGGER_BASE_COST = 1
 const DIGGER_COST_MULTIPLIER = 1.08
 const FORAGER_BASE_COST = 1
