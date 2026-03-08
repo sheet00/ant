@@ -262,7 +262,7 @@ export default function ShopPanel({ game }) {
             <div className="flex flex-col gap-1">
               <div className="text-center text-[11px] text-stone-500">難易度 {difficulty}</div>
               <div className="grid grid-cols-4 gap-1">
-                {[0.05, 0.1, 0.2, 1].map(value => (
+                {[0.05, 0.1, 0.5, 1].map(value => (
                   <button
                     key={value}
                     onClick={() => setDifficulty(value)}
