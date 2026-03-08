@@ -3,7 +3,6 @@ import { formatNumber } from '../utils/format'
 export default function StatusPanel({ game }) {
   const { state, baseDigPower, digPower, totalDigMult, foodPerSec, totalFoodMult, electricityPerSec, getMilestoneInfo } = game
   const { current, next } = getMilestoneInfo()
-  const showRocketHint = current.name === '🌍 地球' && !state.upgradeLevels[33]
 
   const progressStart = current.at
   const progressEnd = next ? next.at : current.at
@@ -20,12 +19,6 @@ export default function StatusPanel({ game }) {
         <div className="mt-1 text-center text-xs text-stone-500">
           {next ? <>次の到達先まで <span className="font-bold text-sky-700">{formatNumber(remaining)}</span></> : '宇宙到達済み'}
         </div>
-        {showRocketHint && (
-          <div className="mt-2 text-center text-[11px] text-amber-700">
-            次は「電気の発見」から「ロケット開発」
-          </div>
-        )}
-
         <div className="mt-3">
           <div className="mb-1 flex justify-between text-xs text-stone-500">
             <span>次: <span className="text-stone-700">{next ? next.name : '制覇！'}</span></span>

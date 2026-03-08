@@ -143,28 +143,31 @@ export default function ColonyPanel({ game }) {
     .sort((a, b) => {
       const aOrder = visualOrderMap.has(a.id) ? visualOrderMap.get(a.id) : Number.MAX_SAFE_INTEGER
       const bOrder = visualOrderMap.has(b.id) ? visualOrderMap.get(b.id) : Number.MAX_SAFE_INTEGER
-      return aOrder - bOrder
+      return bOrder - aOrder
     })
   const visibleCount = Math.max(1, visualUnits.length)
-  const columnCount = Math.min(4, visibleCount)
+  const columnCount = visibleCount <= 2 ? 2 : visibleCount <= 6 ? 3 : 4
+  const gapPx = 12
 
   return (
-    <section className="flex-1 bg-[#f5ecda] p-6">
+    <section className="flex-1 min-h-0 bg-[#f5ecda] p-6">
       <div className="mx-auto flex h-full max-w-5xl items-center justify-center">
-        <div className="flex h-full w-full max-h-[720px] items-center justify-center rounded-[2rem] border border-stone-200 bg-[rgba(255,252,245,0.85)] p-8 shadow-[0_24px_60px_rgba(120,84,43,0.10)] backdrop-blur-sm">
-          <div
-            className="grid w-full justify-items-center gap-3 md:gap-4 lg:gap-5 overflow-y-auto"
-            style={{ gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))` }}
-          >
-            {visualUnits.map(unit => (
-              <img
-                key={unit.id}
-                src={unit.src}
-                alt={unit.name}
-                className="h-auto w-full max-w-[140px] md:max-w-[180px] lg:max-w-[220px] object-contain"
-              />
-            ))}
-          </div>
+        <div
+          className="grid h-full w-full place-items-center content-start"
+          style={{
+            gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
+            gap: `${gapPx}px`,
+          }}
+        >
+          {visualUnits.map(unit => (
+            <img
+              key={unit.id}
+              src={unit.src}
+              alt={unit.name}
+              className="h-auto object-contain"
+              style={{ width: 'clamp(140px, 20vw, 240px)' }}
+            />
+          ))}
         </div>
       </div>
     </section>

@@ -9,9 +9,9 @@ import {
 
 const DIFFICULTY = 1
 const DIGGER_BASE_COST = 1
-const DIGGER_COST_MULTIPLIER = 1.09
+const DIGGER_COST_MULTIPLIER = 1.08
 const FORAGER_BASE_COST = 1
-const FORAGER_COST_MULTIPLIER = 1.05
+const FORAGER_COST_MULTIPLIER = 1.04
 const UPGRADE_COST_MULT = 1.5
 const BASE_VISUAL_UNLOCK_ORDER = ['digger', 'forager']
 
@@ -226,7 +226,7 @@ export function useGameState() {
         // 食料系：購入済み最大ID+3まで表示（余裕を持たせる）
         return upg.id <= maxFoodId + 3
       } else {
-        if (upg.id === 33 && state.territory >= rocketPreviewAt) {
+        if (upg.id === 32 && isElectricUnlocked && state.territory >= rocketPreviewAt) {
           return true
         }
         // 電気系：電気開放済みかつ、購入済み最大ID+3まで

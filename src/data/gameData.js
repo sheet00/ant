@@ -1,4 +1,4 @@
-export const FOOD_UNIT_COST_MULTIPLIER = 1.05;
+export const FOOD_UNIT_COST_MULTIPLIER = 1.04;
 export const ELECTRIC_UNIT_COST_MULTIPLIER = 1.07;
 
 // ユニット（進化でアンロック）
@@ -70,7 +70,7 @@ export const UNITS = [
     name: "アブラムシ牧場",
     desc: "アブラムシを保護し、甘露を収穫する。アリたちの貴重なエネルギー源となる。",
     baseCost: 80000,
-    foodBonusMult: 0.6,
+    foodBonusMult: 1.2,
     unlockedBy: 19,
   },
   {
@@ -214,7 +214,7 @@ export const DIG_UPGRADES = [
     desc: "24時間稼働で効率UP",
     digMultiplier: 1,
     foodMultiplier: 1.1,
-    cost: 900000,
+    cost: 9000,
     type: "unlock",
   },
   {
@@ -258,7 +258,7 @@ export const DIG_UPGRADES = [
     desc: "菌類を栽培して食料確保",
     digMultiplier: 1,
     foodMultiplier: 1.12,
-    cost: 50000,
+    cost: 30000,
     type: "unlock",
   },
   {
@@ -267,7 +267,7 @@ export const DIG_UPGRADES = [
     desc: "繁殖力を大幅に向上",
     digMultiplier: 1,
     foodMultiplier: 1.12,
-    cost: 100000,
+    cost: 60000,
     type: "unlock",
   },
   {
@@ -276,7 +276,7 @@ export const DIG_UPGRADES = [
     desc: "本巣とサテライト巣に機能を分離し、連携運用を開始",
     digMultiplier: 1,
     foodMultiplier: 1.15,
-    cost: 220000,
+    cost: 120000,
     type: "unlock",
   },
   {
@@ -285,7 +285,7 @@ export const DIG_UPGRADES = [
     desc: "そのへんの葉っぱを拾う時代は終わり。今日からコロニー総出の量産体制。",
     digMultiplier: 1,
     foodMultiplier: 1.2,
-    cost: 1500000,
+    cost: 600000,
   },
   {
     id: 19,
@@ -293,7 +293,7 @@ export const DIG_UPGRADES = [
     desc: "アブラムシから甘露を収穫",
     digMultiplier: 1,
     foodMultiplier: 1.2,
-    cost: 600000,
+    cost: 250000,
     type: "unlock",
   },
   {
@@ -302,7 +302,7 @@ export const DIG_UPGRADES = [
     desc: "複数コロニーが情報共有",
     digMultiplier: 1.4,
     foodMultiplier: 1.2,
-    cost: 5000000,
+    cost: 2000000,
   },
   // 超終盤：アリ文明の発展
   {
@@ -311,7 +311,7 @@ export const DIG_UPGRADES = [
     desc: "小枝や石を使って掘削",
     digMultiplier: 1.5,
     foodMultiplier: 1.08,
-    cost: 20000000,
+    cost: 8000000,
   },
   {
     id: 22,
@@ -319,14 +319,14 @@ export const DIG_UPGRADES = [
     desc: "水で土を流して運搬効率UP",
     digMultiplier: 1.6,
     foodMultiplier: 1.08,
-    cost: 40000000,
+    cost: 16000000,
   },
   {
     id: 23,
     name: "車輪の発明",
     desc: "運搬効率が大幅に向上",
     digMultiplier: 1,
-    cost: 80000000,
+    cost: 30000000,
     type: "unlock",
   },
   {
@@ -334,7 +334,7 @@ export const DIG_UPGRADES = [
     name: "金属加工",
     desc: "金属製の道具を製造",
     digMultiplier: 1,
-    cost: 160000000,
+    cost: 60000000,
     type: "unlock",
   },
   {
@@ -342,7 +342,7 @@ export const DIG_UPGRADES = [
     name: "電気の発見",
     desc: "アリ酸で発電する",
     digMultiplier: 1,
-    cost: 80000000,
+    cost: 30000000,
     type: "unlock",
   },
   // 最終：近代化〜未来（電気で購入）
@@ -401,19 +401,18 @@ export const DIG_UPGRADES = [
   },
   {
     id: 32,
-    name: "AI自律掘削",
-    desc: "AIが勝手に最適化",
-    digMultiplier: 2.5,
-    cost: 8000,
+    name: "ロケット開発",
+    desc: "宇宙進出に向けた輸送技術を確立し、長距離掘削の効率を底上げする",
+    digMultiplier: 1.5,
+    cost: 12000,
     currency: "electricity",
   },
   {
     id: 33,
-    name: "ロケット開発",
-    desc: "宇宙へ進出するための移動手段",
-    digMultiplier: 1,
+    name: "AI自律掘削",
+    desc: "AIが勝手に最適化",
+    digMultiplier: 2.5,
     cost: 30000,
-    type: "unlock",
     currency: "electricity",
   },
   {
