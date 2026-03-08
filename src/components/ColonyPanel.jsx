@@ -1,5 +1,5 @@
-import miningAntImage from '../assets/採掘アリ.png'
-import foragerAntImage from '../assets/餌アリ.png'
+import miningAntImage from '../assets/02_掘削アリ.png'
+import foragerAntImage from '../assets/01_採餌アリ.png'
 
 export default function ColonyPanel() {
   return (

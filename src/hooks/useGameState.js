@@ -204,12 +204,21 @@ export function useGameState() {
     // 電気系を表示するかどうか（id:25「電気の発見」が購入済みか）
     const isElectricUnlocked = state.upgradeLevels[25] >= 1
 
+    const hasPrerequisites = (upg) => {
+      if (!Array.isArray(upg.requires) || upg.requires.length === 0) return true
+      return upg.requires.every(reqId => state.upgradeLevels[reqId] >= 1)
+    }
+
     return DIG_UPGRADES.filter(upg => {
       // 既に持っているものは除外
       if (state.upgradeLevels[upg.id] >= 1) return false
+      if (!hasPrerequisites(upg)) return false
 
       if (upg.id < 26) {
         if (upg.id === 25 && state.territory >= rocketPreviewAt) {
+          return true
+        }
+        if (Array.isArray(upg.requires) && upg.requires.length > 0) {
           return true
         }
         // 食料系：購入済み最大ID+3まで表示（余裕を持たせる）
@@ -321,6 +330,7 @@ export function useGameState() {
   const buyUpgrade = (id) => {
     const upg = DIG_UPGRADES.find(u => u.id === id)
     if (!upg) return
+    if (Array.isArray(upg.requires) && !upg.requires.every(reqId => state.upgradeLevels[reqId] >= 1)) return
     // 既に持っていたら買えない
     if ((state.upgradeLevels[upg.id] || 0) >= 1) return
     const cost = getUpgradeCost(upg)
