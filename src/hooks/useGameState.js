@@ -13,6 +13,7 @@ const DIGGER_COST_MULTIPLIER = 1.09
 const FORAGER_BASE_COST = 1
 const FORAGER_COST_MULTIPLIER = 1.05
 const UPGRADE_COST_MULT = 1.5
+const BASE_VISUAL_UNLOCK_ORDER = ['digger', 'forager']
 
 export function useGameState() {
   const DEBUG = import.meta.env.DEV
@@ -24,6 +25,7 @@ export function useGameState() {
     foragers: 2,
     territory: 0,
     upgradeLevels: {},
+    visualUnlockOrder: BASE_VISUAL_UNLOCK_ORDER,
     ants: {}, // アリ種類ID -> 所持数
     gameCleared: false,
   })
@@ -312,17 +314,26 @@ export function useGameState() {
     const n = getBuyAmount(maxBuyable)
     if (n <= 0) return
     const cost = getAntTotalCost(ant, n)
+    const appendVisualUnlock = (s) => {
+      const currentCount = s.ants[antId] || 0
+      if (currentCount > 0) return s.visualUnlockOrder || BASE_VISUAL_UNLOCK_ORDER
+      const prevOrder = s.visualUnlockOrder || BASE_VISUAL_UNLOCK_ORDER
+      if (prevOrder.includes(antId)) return prevOrder
+      return [...prevOrder, antId]
+    }
     if (ant.currency === 'electricity') {
       setState(s => ({
         ...s,
         electricity: s.electricity - cost,
-        ants: { ...s.ants, [antId]: (s.ants[antId] || 0) + n }
+        ants: { ...s.ants, [antId]: (s.ants[antId] || 0) + n },
+        visualUnlockOrder: appendVisualUnlock(s),
       }))
     } else {
       setState(s => ({
         ...s,
         food: s.food - cost,
-        ants: { ...s.ants, [antId]: (s.ants[antId] || 0) + n }
+        ants: { ...s.ants, [antId]: (s.ants[antId] || 0) + n },
+        visualUnlockOrder: appendVisualUnlock(s),
       }))
     }
   }
@@ -341,13 +352,13 @@ export function useGameState() {
       setState(s => ({
         ...s,
         electricity: s.electricity - cost,
-        upgradeLevels: { ...s.upgradeLevels, [upg.id]: 1 }
+        upgradeLevels: { ...s.upgradeLevels, [upg.id]: 1 },
       }))
     } else {
       setState(s => ({
         ...s,
         food: s.food - cost,
-        upgradeLevels: { ...s.upgradeLevels, [upg.id]: 1 }
+        upgradeLevels: { ...s.upgradeLevels, [upg.id]: 1 },
       }))
     }
   }
@@ -360,6 +371,7 @@ export function useGameState() {
       foragers: 2,
       territory: 0,
       upgradeLevels: {},
+      visualUnlockOrder: BASE_VISUAL_UNLOCK_ORDER,
       ants: {},
       gameCleared: false,
     })
