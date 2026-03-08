@@ -26,6 +26,7 @@ export function useGameState() {
     territory: 0,
     upgradeLevels: {},
     visualUnlockOrder: BASE_VISUAL_UNLOCK_ORDER,
+    unlockedAntOrder: [],
     ants: {}, // アリ種類ID -> 所持数
     gameCleared: false,
   })
@@ -134,7 +135,21 @@ export function useGameState() {
 
   // アンロックされたアリ種類
   const getUnlockedAnts = () => {
-    return UNITS.filter(ant => state.upgradeLevels[ant.unlockedBy] >= 1)
+    const unlockedSet = new Set(
+      UNITS.filter(ant => state.upgradeLevels[ant.unlockedBy] >= 1).map(ant => ant.id)
+    )
+    const ordered = []
+    for (const antId of state.unlockedAntOrder || []) {
+      const ant = UNITS.find(unit => unit.id === antId)
+      if (!ant || !unlockedSet.has(antId)) continue
+      ordered.push(ant)
+      unlockedSet.delete(antId)
+    }
+    // 既存セーブ互換: 順序情報がない解禁済みユニットは定義順で末尾に補完
+    for (const ant of UNITS) {
+      if (unlockedSet.has(ant.id)) ordered.push(ant)
+    }
+    return ordered
   }
 
   // コスト計算
@@ -348,17 +363,31 @@ export function useGameState() {
     const isElectric = upg.currency === 'electricity'
     const currency = isElectric ? state.electricity : state.food
     if (currency < cost) return
+    const newlyUnlockedAntIds = UNITS
+      .filter(unit => unit.unlockedBy === upg.id)
+      .map(unit => unit.id)
+    const appendUnlockedAntOrder = (s) => {
+      const prev = s.unlockedAntOrder || []
+      if (newlyUnlockedAntIds.length === 0) return prev
+      const next = [...prev]
+      for (const antId of newlyUnlockedAntIds) {
+        if (!next.includes(antId)) next.push(antId)
+      }
+      return next
+    }
     if (isElectric) {
       setState(s => ({
         ...s,
         electricity: s.electricity - cost,
         upgradeLevels: { ...s.upgradeLevels, [upg.id]: 1 },
+        unlockedAntOrder: appendUnlockedAntOrder(s),
       }))
     } else {
       setState(s => ({
         ...s,
         food: s.food - cost,
         upgradeLevels: { ...s.upgradeLevels, [upg.id]: 1 },
+        unlockedAntOrder: appendUnlockedAntOrder(s),
       }))
     }
   }
@@ -372,6 +401,7 @@ export function useGameState() {
       territory: 0,
       upgradeLevels: {},
       visualUnlockOrder: BASE_VISUAL_UNLOCK_ORDER,
+      unlockedAntOrder: [],
       ants: {},
       gameCleared: false,
     })
